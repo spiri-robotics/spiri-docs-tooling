@@ -44,6 +44,17 @@
 [% if use_vale %]
   "vale.valeCLI.config": "${workspaceFolder}/.vale.ini",
   "vale.valeCLI.minAlertLevel": "suggestion",
+
+  // The extension runs the Vale language server, which keeps its own copy of
+  // the Vale binary and ignores the one on $PATH. Without this it warns "Vale
+  // CLI not installed!" into a channel nobody looks at and simply shows no
+  // squiggles -- the writer sees a style checker that quietly does nothing.
+  // The `vale` on $PATH is still what the "Check writing style" task and CI use.
+  "vale.valeCLI.installVale": true,
+
+  // Fetch the style rules named in .vale.ini. The server needs its own copy for
+  // the same reason as above; the setup script's `vale sync` is for the task.
+  "vale.valeCLI.syncOnStartup": true,
 [% endif %]
   "cSpell.words": ["Spiri", "airframe", "autopilot", "geofence", "telemetry", "waypoint"],
   "cSpell.ignorePaths": ["docs/_build", "styles", ".venv", "uv.lock"]
