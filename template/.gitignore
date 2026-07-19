@@ -2,6 +2,13 @@ docs/_build/
 .venv/
 __pycache__/
 
+# Built documents, named for the document number and revision. CI publishes
+# these; a local `make dist` writes them here too.
+dist/
+
+# Where `act` is told to leave the artifacts a local CI run produced.
+.act-artifacts/
+
 # `vale sync` downloads style packages into styles/. The vocabulary under
 # styles/config is ours and is committed; everything else is fetched.
 styles/*

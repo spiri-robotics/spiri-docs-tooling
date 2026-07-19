@@ -1,0 +1,15 @@
+# Defaults for `act`, so a local CI run matches the build server.
+#
+# act reads this file from the working directory. The build server runs the same
+# workflows through Gitea Actions, whose runner is act -- so what you get here is
+# the real thing rather than an approximation.
+
+# Artifacts have nowhere to go unless act is given a directory to put them in.
+# Without this, upload-artifact fails and you find out only at the end of a long
+# LaTeX build. Contents land in .act-artifacts/<run>/<name>/.
+--artifact-server-path .act-artifacts
+
+# The default act image is minimal to the point of missing `sudo`, which the
+# LaTeX install needs. This one is what act's own docs recommend for workflows
+# written against GitHub's ubuntu-latest.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest

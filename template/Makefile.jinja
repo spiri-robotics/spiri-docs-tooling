@@ -1,7 +1,7 @@
 # Command-line equivalents of the VS Code tasks in .vscode/tasks.json, for
 # people who prefer a terminal. Contributors are not expected to need this file.
 
-.PHONY: watch docs check update pdf lint clean
+.PHONY: watch docs check update pdf dist ci lint clean
 
 # Live preview: builds, serves, and refreshes as files change.
 watch:
@@ -21,13 +21,32 @@ update:
 	uvx copier update
 [% if build_pdf %]
 # Build the PDF. The first run installs the LaTeX toolchain into the container;
-# CI does this for you on a tag.
+# CI does this for you on every push.
 pdf:
 	bash .devcontainer/install-latex.sh
 	uv run sphinx-build -b latex docs docs/_build/latex
 	$(MAKE) -C docs/_build/latex all-pdf
 	@bash .devcontainer/show-pdf.sh
-[% endif %][% if use_vale %]
+[% endif %]
+# Produce the published documents under dist/, named for the document number and
+# revision -- byte-for-byte what CI uploads and what a release carries. Useful
+# for checking a filename or a cover page before tagging.
+dist: check[% if build_pdf %] pdf[% endif %]
+	@mkdir -p dist
+	@name=$$(uv run python -m spiri_docs name); \
+	uv run python -c "import shutil, sys; shutil.make_archive(sys.argv[1], 'zip', 'docs/_build/html')" \
+		"dist/$${name}_html"; \
+[%- if build_pdf %]
+	cp "docs/_build/latex/$${name}.pdf" dist/; \
+[%- endif %]
+	ls -1 dist/
+
+# Run the CI workflow locally, through the same runner the build server uses.
+# Needs act (https://github.com/nektos/act) and a container runtime; flags come
+# from .actrc, including where the artifacts are left.
+ci:
+	act push --workflows .github/workflows/docs.yml
+[% if use_vale %]
 # Check prose against the Spiri style guide.
 lint:
 	vale sync

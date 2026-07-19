@@ -17,17 +17,91 @@ jobs:
 
       - run: uv sync --group docs
 
+      # Every file this workflow publishes is named for the document number and
+      # revision, so a copy that has been emailed around still says what it is.
+      # The name comes from revisions.yaml via spiri_docs -- the same call that
+      # names the PDF -- rather than being spelled out again in YAML, where it
+      # would drift and publish SPIRI-OM-001_rev1.1.pdf with a rev1.2 footer.
+      - name: Read the document name
+        id: doc
+        run: uv run python -m spiri_docs fields >> "$GITHUB_OUTPUT"
+
       # Also validates revisions.yaml -- a regulator-facing revision with no
       # approver or effective date fails here rather than reaching a reader.
       - name: Build HTML
         run: uv run sphinx-build -b html -W docs docs/_build/html
 
+      # Zipped explicitly rather than handing the directory to upload-artifact.
+      # Two reasons: the release attaches this exact file, and a bare directory
+      # is not a file an act runner can hand back -- act writes artifact
+      # contents to disk as-is and does no zipping of its own.
+      - name: Package HTML
+        run: |
+          mkdir -p dist
+          uv run python -c "
+          import shutil
+          shutil.make_archive('dist/${{ steps.doc.outputs.name }}_html', 'zip', 'docs/_build/html')
+          "
+
       - name: Upload HTML
         uses: actions/upload-artifact@v7
         with:
-          name: html
-          path: docs/_build/html
-[% if use_vale %]
+          name: ${{ steps.doc.outputs.name }}_html
+          path: dist/${{ steps.doc.outputs.name }}_html.zip
+          if-no-files-found: error
+[% if build_pdf %]
+  # The PDF is built on every run, not just on tags, so what reviewers look at
+  # is the artifact the release will carry. The cost is the LaTeX install below
+  # (a few minutes, and it dominates this job); if that becomes the slowest part
+  # of a pull request, narrow the trigger to `if: github.ref == 'refs/heads/main'`
+  # rather than dropping the job -- a PDF that only ever builds on a tag is a
+  # PDF whose first failure is on the day you are trying to issue a revision.
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          python-version: "[[ python_version ]]"
+
+      - run: uv sync --group docs
+
+      - name: Read the document name
+        id: doc
+        run: uv run python -m spiri_docs fields >> "$GITHUB_OUTPUT"
+
+      # texlive-latex-extra carries the packages Sphinx's LaTeX output expects
+      # (framed, titlesec, wrapfig, capt-of); latexmk drives the build.
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended tex-gyre[% if use_spiri_brand %] \
+            librsvg2-bin[% endif %]
+[%- if use_spiri_brand %]
+          # librsvg2-bin converts the cover logo from SVG, which pdflatex cannot
+          # read. The build below runs with -W, so a missing converter fails the
+          # build rather than quietly issuing an unbranded controlled document.
+[%- endif %]
+
+      # spiri_docs names the .tex (and so the .pdf) after the document number and
+      # revision, which is why nothing is renamed afterwards.
+      - name: Build PDF
+        run: |
+          uv run sphinx-build -b latex -W docs docs/_build/latex
+          make -C docs/_build/latex all-pdf
+          mkdir -p dist
+          cp docs/_build/latex/${{ steps.doc.outputs.name }}.pdf dist/
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.doc.outputs.name }}_pdf
+          path: dist/${{ steps.doc.outputs.name }}.pdf
+          if-no-files-found: error
+[% endif %][% if use_vale %]
   prose:
     runs-on: ubuntu-latest
     # Advisory for now: this reports style-guide findings without blocking a
