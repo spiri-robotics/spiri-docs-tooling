@@ -34,7 +34,7 @@ from . import latex, logo
 from .directives import RevisionHistoryDirective
 from .revisions import Revision, RevisionError, RevisionHistory, load, parse
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 __all__ = [
     "Revision",
