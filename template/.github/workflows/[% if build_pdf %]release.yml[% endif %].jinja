@@ -28,7 +28,12 @@ jobs:
     env:
       RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      # The figures live in Git LFS. A controlled document issued with pointer
+      # files where its diagrams should be is the worst version of this bug, so
+      # it matters more here than anywhere else.
       - uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - uses: astral-sh/setup-uv@v8.3.2
         with:

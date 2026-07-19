@@ -20,6 +20,26 @@ build:
     - librsvg2-bin
 [%- endif %]
   jobs:
+    # Fetch the art assets. Screenshots and photographs live in Git LFS (see
+    # .gitattributes), and RTD's image has no git-lfs and grants no sudo to
+    # install one, so the binary is fetched here and pointed at by absolute
+    # path. Without this the checkout leaves 130-byte pointer files where the
+    # images should be and the build *succeeds*, publishing a manual whose
+    # figures are all broken -- which is why this is not best-effort.
+    #
+    # Adapted from the recipe in RTD's build-customization guide; the tarball
+    # layout there is stale, as the binary has been under a versioned directory
+    # since 3.x, hence --strip-components.
+    post_checkout:
+      - wget -q https://github.com/git-lfs/git-lfs/releases/download/v3.7.1/git-lfs-linux-amd64-v3.7.1.tar.gz
+      - tar xzf git-lfs-linux-amd64-v3.7.1.tar.gz --strip-components=1 git-lfs-3.7.1/git-lfs
+      - git config filter.lfs.process "$(pwd)/git-lfs filter-process"
+      - git config filter.lfs.smudge "$(pwd)/git-lfs smudge -- %f"
+      - git config filter.lfs.clean "$(pwd)/git-lfs clean -- %f"
+      - ./git-lfs install --local
+      - ./git-lfs fetch
+      - ./git-lfs checkout
+
     install:
       - pip install uv
       - uv sync --group docs

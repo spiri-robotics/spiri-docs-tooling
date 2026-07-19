@@ -5,7 +5,15 @@
   "image": "mcr.microsoft.com/devcontainers/python:[[ python_version ]]",
 
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+
+    // Screenshots and photographs are stored in Git LFS -- see .gitattributes.
+    // This feature installs git-lfs *and* runs `git lfs install`, which is the
+    // part that matters: without the filter registered, dropping a screenshot
+    // into docs/ commits the whole file into history instead of a pointer, and
+    // CI rejects the push. Nobody writing a manual should have to know that,
+    // so the container knows it for them.
+    "ghcr.io/devcontainers/features/git-lfs:1": {}
   },
 
   "postCreateCommand": "bash .devcontainer/setup.sh",

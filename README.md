@@ -40,6 +40,13 @@ They never see uv, Sphinx, or a command line:
   while typing rather than at build time.
 - **`.gitattributes` pins LF endings**, which otherwise bite Windows
   contributors the moment a shell script reaches the Linux container.
+- **Art assets go to Git LFS** — screenshots, photographs and design sources are
+  stored out of line, so a manual that revises a 4 MB photograph ten times does
+  not hand every future contributor 40 MB of history they cannot remove. The dev
+  container installs git-lfs, CI fetches it, and a `docs.yml` job fails the pull
+  request if a raster was committed directly — `filter=lfs` alone is silent when
+  git-lfs is missing, which is exactly when you need to hear about it. SVG stays
+  in plain Git: it diffs, and the cover logo is read straight from it.
 
 ## The split, and why
 

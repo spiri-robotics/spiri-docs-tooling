@@ -4,10 +4,67 @@
 # repository; Git still checks files out natively on Windows.
 * text=auto eol=lf
 
-# Binary assets must never be line-ending converted.
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
-*.pdf binary
+# ---------------------------------------------------------------------------
+# Art assets go to Git LFS.
+#
+# A manual accumulates screenshots, photographs and diagrams, and every revision
+# of one is kept forever by a plain Git repository -- a 4 MB photo replaced ten
+# times is 40 MB every contributor clones, permanently, because history cannot
+# be rewritten once a document has been issued against it. LFS stores a pointer
+# in the commit and the bytes out of line, so a clone pays for the revision it
+# checks out rather than for every revision there has ever been.
+#
+# `filter=lfs` only takes effect if git-lfs is installed where the commit is
+# made. It is in the dev container (see .devcontainer/devcontainer.json), and CI
+# refuses a raster asset that was committed without it -- see the `assets` job
+# in .github/workflows/docs.yml, which is what makes "only" in the paragraph
+# above true rather than aspirational.
+#
+# Anything listed here must also be fetched before the document builds, so a
+# format added below needs no other change, but a *new kind* of build (a new
+# CI job, a new host) does: it needs `lfs: true` on its checkout.
+
+# Raster images -- screenshots and photographs, the bulk of what a manual grows.
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.webp filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.bmp filter=lfs diff=lfs merge=lfs -text
+*.ico filter=lfs diff=lfs merge=lfs -text
+
+# Editable sources someone hands over with the artwork. Large, opaque, and
+# revised often -- the worst case for plain Git and the best case for LFS.
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.ai filter=lfs diff=lfs merge=lfs -text
+*.xcf filter=lfs diff=lfs merge=lfs -text
+*.kra filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.fig filter=lfs diff=lfs merge=lfs -text
+*.sketch filter=lfs diff=lfs merge=lfs -text
+
+# Video and audio, for a procedure that is easier shown than described.
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+*.mp3 filter=lfs diff=lfs merge=lfs -text
+*.wav filter=lfs diff=lfs merge=lfs -text
+
+# Fonts, if the document ships one rather than relying on the TeX distribution.
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+*.woff filter=lfs diff=lfs merge=lfs -text
+*.woff2 filter=lfs diff=lfs merge=lfs -text
+
+# A PDF committed on purpose -- a supplier's manual quoted as an appendix, say.
+# The documents this project *publishes* are not committed at all; they are
+# release assets, and dist/ is in .gitignore.
+*.pdf filter=lfs diff=lfs merge=lfs -text
+
+# SVG is deliberately NOT in LFS. It is text: it diffs, it merges, it is
+# typically kilobytes, and the brand logos on the cover page are SVGs the build
+# reads directly. Putting them behind LFS would make an unfetched pointer file
+# look to the build like a malformed logo rather than a missing one.
 *.svg text

@@ -6,10 +6,76 @@ on:
   pull_request:
 
 jobs:
+  # Screenshots and photographs belong in Git LFS -- see .gitattributes for why.
+  # `filter=lfs` there is a request, not a guarantee: it does nothing unless
+  # git-lfs is installed where the commit was made, and when it is missing Git
+  # commits the whole file with no warning at all. By the time anyone notices,
+  # the bytes are in the history of an issued document and cannot be taken out
+  # without rewriting it. So catch it here, on the pull request, while removing
+  # it is still one amended commit.
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      # No `lfs: true`: this job reads what the *commit* stores, and fetching
+      # the real files would defeat the check.
+      - uses: actions/checkout@v7
+
+      - name: Check art assets are in LFS
+        run: |
+          # For every tracked file, ask Git whether .gitattributes assigns it
+          # the lfs filter, then read the blob out of the index. A file that is
+          # meant to be in LFS but does not begin with the pointer header was
+          # committed by someone without git-lfs installed.
+          # Newline-separated, not space-separated: "wiring diagram.png" is a
+          # perfectly ordinary name for a writer to give a file.
+          offenders=""
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            # `check-attr` prints "<path>: filter: <value>"; the value is the
+            # last field, which is the one part of that line a path cannot
+            # disturb by containing a colon.
+            [ "$(git check-attr filter -- "$file" | awk '{print $NF}')" = "lfs" ] || continue
+            if ! git cat-file -p ":$file" 2>/dev/null | head -n1 | grep -q '^version https://git-lfs\.github\.com/spec/'; then
+              offenders="$offenders$file"$'\n'
+            fi
+          done < <(git ls-files)
+
+          if [ -n "$offenders" ]; then
+            while IFS= read -r file; do
+              [ -n "$file" ] || continue
+              echo "::error file=$file::$file was committed to Git directly instead of to Git LFS."
+            done <<< "$offenders"
+            cat >&2 <<'HELP'
+
+          ------------------------------------------------------------------
+          Some art assets were committed as ordinary files.
+
+          This usually means git-lfs was not installed on the machine that made
+          the commit. The fix, from inside the dev container (which has it):
+
+            git lfs install
+            git rm --cached <the files listed above>
+            git add <the files listed above>
+            git commit --amend --no-edit
+            git push --force-with-lease
+
+          If you are not sure, say so on the pull request rather than force
+          pushing -- someone will sort it out with you.
+          ------------------------------------------------------------------
+
+          HELP
+            exit 1
+          fi
+          echo "All art assets are stored in LFS."
+
   build:
     runs-on: ubuntu-latest
     steps:
+      # Images are LFS pointers in the commit; without this the build embeds
+      # the pointer files and publishes a manual full of broken figures.
       - uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - uses: astral-sh/setup-uv@v8.3.2
         with:
@@ -60,6 +126,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - uses: astral-sh/setup-uv@v8.3.2
         with:

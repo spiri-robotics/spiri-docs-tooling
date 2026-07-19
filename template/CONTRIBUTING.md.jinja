@@ -196,6 +196,13 @@ Put the image file in `docs/_static/`, then refer to it:
 The description is not optional — it is what a screen reader says aloud, and
 what appears if the image fails to load.
 
+Pictures are stored differently from words, so that a repository full of
+screenshots stays quick to download. This is automatic: if you are working in
+the dev container, adding a picture and committing it is all you do. If you ever
+see a build complain that an image "was committed to Git directly", it means the
+picture was added from a machine outside the container — say so on the pull
+request and someone will move it across for you. Nothing is lost.
+
 ---
 
 ## Sharing your changes
