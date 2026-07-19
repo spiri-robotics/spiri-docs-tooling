@@ -38,7 +38,12 @@ build:
         - uv run sphinx-build -b latex docs docs/_build/latex
         - make -C docs/_build/latex all-pdf
         - mkdir -p $READTHEDOCS_OUTPUT/pdf
-        - cp docs/_build/latex/*.pdf $READTHEDOCS_OUTPUT/pdf/
+        # Name the file rather than globbing `*.pdf`. The build directory holds
+        # more than one PDF[% if use_spiri_brand %] -- Sphinx copies the converted cover logo in
+        # beside the document[% endif %], and RTD rejects a pdf output directory containing
+        # more than one file. `spiri_docs name` is the same source of truth the
+        # release workflow uses, so the two cannot drift apart.
+        - cp "docs/_build/latex/$(uv run python -m spiri_docs name).pdf" $READTHEDOCS_OUTPUT/pdf/
 [%- endif %]
 [%- if build_pdf %]
 
