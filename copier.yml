@@ -91,6 +91,16 @@ author_name:
   help: The organisation or person credited on the cover page.
   default: Spiri Robotics
 
+use_spiri_brand:
+  type: bool
+  help: >-
+    Apply Spiri brand guidelines -- the logo and the house palette. Say no for a
+    manual published under someone else's name (a partner, an OEM rebadge, a
+    customer's own documentation), where shipping Spiri trademarks would be
+    wrong. Saying no keeps the theme's default colours and ships no logo;
+    hazard colours are unaffected either way.
+  default: true
+
 github_owner:
   type: str
   help: GitHub user or org, for the repo and release links.

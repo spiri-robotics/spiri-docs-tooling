@@ -1,7 +1,7 @@
 # Command-line equivalents of the VS Code tasks in .vscode/tasks.json, for
 # people who prefer a terminal. Contributors are not expected to need this file.
 
-.PHONY: watch docs check pdf lint clean
+.PHONY: watch docs check update pdf lint clean
 
 # Live preview: builds, serves, and refreshes as files change.
 watch:
@@ -14,9 +14,16 @@ docs:
 # Build the way CI does: warnings are errors.
 check:
 	uv run sphinx-build -b html -W docs docs/_build/html
+
+# Pull the latest build setup from the template. Interactive: a newer template
+# may ask questions the old one did not. Review the diff before committing.
+update:
+	uvx copier update
 [% if build_pdf %]
-# Build the PDF. Needs a LaTeX toolchain; CI does this for you on a tag.
+# Build the PDF. The first run installs the LaTeX toolchain into the container;
+# CI does this for you on a tag.
 pdf:
+	bash .devcontainer/install-latex.sh
 	uv run sphinx-build -b latex docs docs/_build/latex
 	$(MAKE) -C docs/_build/latex all-pdf
 	@echo "PDF written to docs/_build/latex/"

@@ -36,19 +36,40 @@ myst_heading_anchors = 3
 
 # -- HTML -------------------------------------------------------------------
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_title = "[[ document_title ]]"
 
+# Furo has no `navigation_depth`: the left sidebar shows the toctree at whatever
+# `:maxdepth:` index.md asks for, and the right sidebar lists the current page's
+# own headings. Between them a reader can still land on a section number without
+# expanding anything, which is what the old setting was for.
 html_theme_options = {
-    "collapse_navigation": False,
-    # A manual is read by section number as often as by name.
-    "navigation_depth": 4,
+    "navigation_with_keys": True,
+[%- if use_spiri_brand %]
+    # Two files, not one tinted by CSS: the wordmark is black in one and white in
+    # the other, and `filter: invert()` on a multi-coloured mark would take the
+    # brand colours with it. Furo swaps these on the theme toggle.
+    "light_logo": "spiri-logo-light.svg",
+    "dark_logo": "spiri-logo-dark.svg",
+[%- endif %]
 }
+
+# Colours -- including the light/dark hazard pairs -- live in _static/custom.css
+# rather than in `light_css_variables`/`dark_css_variables` here, so that the
+# house style stays in one file and stays legible as CSS.
 
 # -- PDF --------------------------------------------------------------------
 
+[%- if use_spiri_brand %]
+# The cover logo. pdflatex cannot read SVG, so spiri_docs converts this one to
+# PDF during a LaTeX build -- which is why it names the same file the HTML uses
+# rather than a separate rasterised copy. Rebranding means replacing the SVGs in
+# _static and nothing here. The light variant is correct: a cover is printed.
+spiri_docs_logo = "_static/spiri-logo-light.svg"
+
+[%- endif %]
 # spiri_docs sets latex_documents (so the file is named for the document number
 # and revision) and appends the document-control preamble. What is left here is
 # page setup, which is a per-document choice.

@@ -34,7 +34,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             latexmk texlive-latex-recommended texlive-latex-extra \
-            texlive-fonts-recommended tex-gyre
+            texlive-fonts-recommended tex-gyre[% if use_spiri_brand %] \
+            librsvg2-bin[% endif %]
+[%- if use_spiri_brand %]
+          # librsvg2-bin converts the cover logo from SVG, which pdflatex cannot
+          # read. The build below runs with -W, so a missing converter fails the
+          # release rather than quietly issuing an unbranded controlled document.
+[%- endif %]
 
       - name: Build PDF
         run: |

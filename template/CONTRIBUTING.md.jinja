@@ -112,12 +112,67 @@ Useful information, not a hazard.
 **Terminal → Run Task → Check writing style** runs the house style guide over
 the manual and lists anything it would like changed. It is advisory: suggestions
 are worth reading, but nothing is blocked if you disagree with one.
+
+### Silencing the style checker
+
+Sometimes the checker is wrong — a part number reads as a misspelling, or a
+sentence has to be passive because the aircraft is what matters, not who acted.
+You can switch it off for a passage with two comments:
+
+```markdown
+<!-- vale off -->
+Torque to 4.5 N·m as specified by the airframe manufacturer.
+<!-- vale on -->
+```
+
+Everything between the two is left alone. **Do not forget the `vale on`** — if
+you leave it out, the rest of the file goes unchecked and nobody will notice.
+
+Better, when you know which suggestion you are dismissing, is to switch off only
+that one. The rule name is the last thing on each line of the checker's output —
+`Microsoft.Passive` in this example:
+
+```markdown
+<!-- vale Microsoft.Passive = NO -->
+Torque to 4.5 N·m as specified by the airframe manufacturer.
+<!-- vale Microsoft.Passive = YES -->
+```
+
+Everything else stays checked, so a genuine typo in that passage is still
+caught.
+
+These comments do not appear in the built manual — not on the website and not in
+the PDF. They work anywhere in a page, including inside a `:::{warning}` block
+and inside a list. There is no way to silence one line from within that line;
+the comments go on the lines around it.
+
+A word of restraint: the checker is advisory, so an unwanted suggestion costs
+you nothing but the reading of it. Silencing is for the case where the same
+false alarm keeps interrupting the same passage. If you find yourself silencing
+the same rule all over the manual, the rule is a poor fit for the kind of
+document this is — say so to the document owner rather than papering over it,
+because that is a fix everyone benefits from.
+
+A proper noun the checker does not know — a product name, a supplier, a place —
+is not a case for silencing at all. Add it to
+[`styles/config/vocabularies/Spiri/accept.txt`](styles/config/vocabularies/Spiri/accept.txt),
+one per line, and it is accepted everywhere in the manual.
 [% endif %]
 ### Checking the manual is sound
 
 **Terminal → Run Task → Check the manual for problems** builds it once and
 reports broken cross-references and anything else that would fail on the
 website. Worth doing before you share your changes.
+
+### Updating the tooling
+
+**Terminal → Run Task → Update the tooling** pulls the latest build setup from
+the template. It may ask you questions in the terminal — a newer template
+sometimes has options the one you started from did not; the answers you gave
+last time are offered as defaults, so pressing Enter through them is fine.
+
+It touches only the build setup, never your prose, but look over the changes in
+the Source Control panel before committing them.
 
 ---
 

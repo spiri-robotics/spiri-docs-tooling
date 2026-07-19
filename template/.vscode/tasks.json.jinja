@@ -53,12 +53,20 @@
       "command": "uv run sphinx-build -b html -W docs docs/_build/html",
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "problemMatcher": []
+    },
+    {
+      "label": "Update the tooling",
+      "detail": "Pulls the latest build setup from the template. Answer any questions in the terminal, then review the changes before committing.",
+      "type": "shell",
+      "command": "uvx copier update",
+      "presentation": { "reveal": "always", "focus": true, "panel": "dedicated" },
+      "problemMatcher": []
     }[% if build_pdf %],
     {
       "label": "Build a PDF",
-      "detail": "Needs a LaTeX toolchain; normally CI builds this for you on release.",
+      "detail": "Builds the PDF here. The first run installs LaTeX and takes a few minutes; CI builds this for you on release.",
       "type": "shell",
-      "command": "uv run sphinx-build -b latex docs docs/_build/latex && make -C docs/_build/latex all-pdf",
+      "command": "bash .devcontainer/install-latex.sh && uv run sphinx-build -b latex docs docs/_build/latex && make -C docs/_build/latex all-pdf",
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "problemMatcher": []
     }[% endif %]
