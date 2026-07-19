@@ -7,64 +7,136 @@
 # ---------------------------------------------------------------------------
 # Art assets go to Git LFS.
 #
-# A manual accumulates screenshots, photographs and diagrams, and every revision
-# of one is kept forever by a plain Git repository -- a 4 MB photo replaced ten
-# times is 40 MB every contributor clones, permanently, because history cannot
-# be rewritten once a document has been issued against it. LFS stores a pointer
-# in the commit and the bytes out of line, so a clone pays for the revision it
-# checks out rather than for every revision there has ever been.
+# A manual accumulates screenshots, photographs, diagrams and the CAD they were
+# rendered from, and every revision of one is kept forever by a plain Git
+# repository -- a 4 MB photo replaced ten times is 40 MB every contributor
+# clones, permanently, because history cannot be rewritten once a document has
+# been issued against it. LFS stores a pointer in the commit and the bytes out
+# of line, so a clone pays for the revision it checks out rather than for every
+# revision there has ever been.
 #
 # `filter=lfs` only takes effect if git-lfs is installed where the commit is
 # made. It is in the dev container (see .devcontainer/devcontainer.json), and CI
-# refuses a raster asset that was committed without it -- see the `assets` job
-# in .github/workflows/docs.yml, which is what makes "only" in the paragraph
-# above true rather than aspirational.
+# refuses an asset that was committed without it -- see the `assets` job in
+# .github/workflows/docs.yml, which is what makes "only" in the paragraph above
+# true rather than aspirational.
 #
-# Anything listed here must also be fetched before the document builds, so a
-# format added below needs no other change, but a *new kind* of build (a new
-# CI job, a new host) does: it needs `lfs: true` on its checkout.
+# About the character classes, which cost a real bug to learn: Git matches these
+# patterns case-sensitively on Linux and macOS, so a plain `*.jpg` does not match
+# `IMG_1234.JPG` -- which is what a camera actually produces, and `BRACKET.STEP`
+# is what a supplier actually sends. Such a file would slip past both the LFS
+# filter and the CI check with no warning at all. `*.[jJ][pP][gG]` is the ugly,
+# correct spelling; keep it when adding a format.
+#
+# Git does have a macro attribute that would let all this be written as `*.png
+# art`. It is not used here: macros are only legal in a repository's *top-level*
+# .gitattributes, and while that is where this file lands in a generated project,
+# it also lives at template/.gitattributes in the template repository, where Git
+# rejects it and prints a warning on every command. Repeating the four attributes
+# is duller and works in both places.
 
 # Raster images -- screenshots and photographs, the bulk of what a manual grows.
-*.png filter=lfs diff=lfs merge=lfs -text
-*.jpg filter=lfs diff=lfs merge=lfs -text
-*.jpeg filter=lfs diff=lfs merge=lfs -text
-*.gif filter=lfs diff=lfs merge=lfs -text
-*.webp filter=lfs diff=lfs merge=lfs -text
-*.tif filter=lfs diff=lfs merge=lfs -text
-*.tiff filter=lfs diff=lfs merge=lfs -text
-*.bmp filter=lfs diff=lfs merge=lfs -text
-*.ico filter=lfs diff=lfs merge=lfs -text
+*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][eE][gG] filter=lfs diff=lfs merge=lfs -text
+*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text
+*.[wW][eE][bB][pP] filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF] filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
+*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text
+*.[iI][cC][oO] filter=lfs diff=lfs merge=lfs -text
 
 # Editable sources someone hands over with the artwork. Large, opaque, and
 # revised often -- the worst case for plain Git and the best case for LFS.
-*.psd filter=lfs diff=lfs merge=lfs -text
-*.ai filter=lfs diff=lfs merge=lfs -text
-*.xcf filter=lfs diff=lfs merge=lfs -text
-*.kra filter=lfs diff=lfs merge=lfs -text
-*.blend filter=lfs diff=lfs merge=lfs -text
-*.fig filter=lfs diff=lfs merge=lfs -text
-*.sketch filter=lfs diff=lfs merge=lfs -text
+*.[pP][sS][dD] filter=lfs diff=lfs merge=lfs -text
+*.[aA][iI] filter=lfs diff=lfs merge=lfs -text
+*.[xX][cC][fF] filter=lfs diff=lfs merge=lfs -text
+*.[kK][rR][aA] filter=lfs diff=lfs merge=lfs -text
+*.[bB][lL][eE][nN][dD] filter=lfs diff=lfs merge=lfs -text
+*.[fF][iI][gG] filter=lfs diff=lfs merge=lfs -text
+*.[sS][kK][eE][tT][cC][hH] filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# CAD. A manual for a physical product gets figures generated from the model,
+# and sooner or later the model itself arrives beside them -- an exploded view
+# for a maintenance procedure, a fit check quoted in an assembly step.
+#
+# Some of these are technically text: STEP and IGES are ASCII, and so is one of
+# the two STL flavours. They are here anyway. The point of keeping a format in
+# plain Git is that a human can read the diff, and nobody has ever usefully
+# reviewed a changed B-rep control point; what you get instead is a hundred-
+# megabyte diff nobody can open.
+
+# Neutral interchange formats -- what a supplier usually sends.
+*.[sS][tT][eE][pP] filter=lfs diff=lfs merge=lfs -text
+*.[sS][tT][pP] filter=lfs diff=lfs merge=lfs -text
+*.[iI][gG][eE][sS] filter=lfs diff=lfs merge=lfs -text
+*.[iI][gG][sS] filter=lfs diff=lfs merge=lfs -text
+*.[xX]_[tT] filter=lfs diff=lfs merge=lfs -text
+*.[xX]_[bB] filter=lfs diff=lfs merge=lfs -text
+*.[sS][aA][tT] filter=lfs diff=lfs merge=lfs -text
+*.[jJ][tT] filter=lfs diff=lfs merge=lfs -text
+
+# Meshes -- 3D printing, and the source of most rendered figures.
+*.[sS][tT][lL] filter=lfs diff=lfs merge=lfs -text
+*.3[mM][fF] filter=lfs diff=lfs merge=lfs -text
+*.[oO][bB][jJ] filter=lfs diff=lfs merge=lfs -text
+*.[pP][lL][yY] filter=lfs diff=lfs merge=lfs -text
+*.[fF][bB][xX] filter=lfs diff=lfs merge=lfs -text
+*.[dD][aA][eE] filter=lfs diff=lfs merge=lfs -text
+*.[gG][lL][bB] filter=lfs diff=lfs merge=lfs -text
+
+# Native project files, which are opaque, large, and revised constantly.
+*.[fF]3[dD] filter=lfs diff=lfs merge=lfs -text
+*.[fF]3[zZ] filter=lfs diff=lfs merge=lfs -text
+*.[fF][cC][sS][tT][dD] filter=lfs diff=lfs merge=lfs -text
+*.[sS][lL][dD][pP][rR][tT] filter=lfs diff=lfs merge=lfs -text
+*.[sS][lL][dD][aA][sS][mM] filter=lfs diff=lfs merge=lfs -text
+*.[sS][lL][dD][dD][rR][wW] filter=lfs diff=lfs merge=lfs -text
+*.[iI][pP][tT] filter=lfs diff=lfs merge=lfs -text
+*.[iI][aA][mM] filter=lfs diff=lfs merge=lfs -text
+*.[iI][dD][wW] filter=lfs diff=lfs merge=lfs -text
+*.[cC][aA][tT][pP][aA][rR][tT] filter=lfs diff=lfs merge=lfs -text
+*.[cC][aA][tT][pP][rR][oO][dD][uU][cC][tT] filter=lfs diff=lfs merge=lfs -text
+*.[pP][rR][tT] filter=lfs diff=lfs merge=lfs -text
+*.[aA][sS][mM] filter=lfs diff=lfs merge=lfs -text
+*.[sS][kK][pP] filter=lfs diff=lfs merge=lfs -text
+
+# Drawings.
+*.[dD][wW][gG] filter=lfs diff=lfs merge=lfs -text
+*.[dD][xX][fF] filter=lfs diff=lfs merge=lfs -text
+
+# Electronics, since a wiring diagram in a manual comes from somewhere.
+*.[bB][rR][dD] filter=lfs diff=lfs merge=lfs -text
+*.[kK][iI][cC][aA][dD]_[pP][cC][bB] filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
 
 # Video and audio, for a procedure that is easier shown than described.
-*.mp4 filter=lfs diff=lfs merge=lfs -text
-*.mov filter=lfs diff=lfs merge=lfs -text
-*.webm filter=lfs diff=lfs merge=lfs -text
-*.mp3 filter=lfs diff=lfs merge=lfs -text
-*.wav filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]4 filter=lfs diff=lfs merge=lfs -text
+*.[mM][oO][vV] filter=lfs diff=lfs merge=lfs -text
+*.[wW][eE][bB][mM] filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]3 filter=lfs diff=lfs merge=lfs -text
+*.[wW][aA][vV] filter=lfs diff=lfs merge=lfs -text
 
 # Fonts, if the document ships one rather than relying on the TeX distribution.
-*.ttf filter=lfs diff=lfs merge=lfs -text
-*.otf filter=lfs diff=lfs merge=lfs -text
-*.woff filter=lfs diff=lfs merge=lfs -text
-*.woff2 filter=lfs diff=lfs merge=lfs -text
+*.[tT][tT][fF] filter=lfs diff=lfs merge=lfs -text
+*.[oO][tT][fF] filter=lfs diff=lfs merge=lfs -text
+*.[wW][oO][fF][fF] filter=lfs diff=lfs merge=lfs -text
+*.[wW][oO][fF][fF]2 filter=lfs diff=lfs merge=lfs -text
 
 # A PDF committed on purpose -- a supplier's manual quoted as an appendix, say.
 # The documents this project *publishes* are not committed at all; they are
 # release assets, and dist/ is in .gitignore.
-*.pdf filter=lfs diff=lfs merge=lfs -text
+*.[pP][dD][fF] filter=lfs diff=lfs merge=lfs -text
 
-# SVG is deliberately NOT in LFS. It is text: it diffs, it merges, it is
-# typically kilobytes, and the brand logos on the cover page are SVGs the build
-# reads directly. Putting them behind LFS would make an unfetched pointer file
-# look to the build like a malformed logo rather than a missing one.
+# ---------------------------------------------------------------------------
+# Deliberately NOT in LFS. These are genuine text sources that a person writes
+# and reviews line by line, and a pointer file would be worse than useless:
+#
+#   *.svg         also read directly by the build for the cover logo, where an
+#                 unfetched pointer looks like a malformed logo, not a missing one
+#   *.scad        OpenSCAD, which is a program
+#   *.kicad_sch   KiCad schematics -- s-expressions, with meaningful diffs
+#   *.gltf        JSON (its .bin payload is another matter; add it if one turns up)
 *.svg text
