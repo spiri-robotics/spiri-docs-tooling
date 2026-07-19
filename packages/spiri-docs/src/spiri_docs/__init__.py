@@ -34,7 +34,7 @@ from . import latex, logo
 from .directives import RevisionHistoryDirective
 from .revisions import Revision, RevisionError, RevisionHistory, load, parse
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 __all__ = [
     "Revision",
@@ -159,6 +159,15 @@ def _on_builder_inited(app: Sphinx) -> None:
         # to_pdf has already warned. Clear the path so the builder does not fail
         # on a file that was never written: a cover without a logo still ships.
         app.config.latex_logo = ""
+
+        # Clearing the config is not enough on its own. The builder's `init()`
+        # ran before this event and `init_context()` already copied the basename
+        # into `logofilename`, which is what the template actually interpolates.
+        # Leave it and the .tex keeps an `\includegraphics` for a file nobody
+        # wrote -- and because the line above also stops Sphinx copying the
+        # logo, the failure surfaces as a fatal pdflatex error about a missing
+        # PDF rather than anything a writer could act on.
+        app.builder.context.pop("logofilename", None)
 
 
 def setup(app: Sphinx) -> dict[str, Any]:

@@ -14,6 +14,8 @@ import pytest
 from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
 
+from spiri_docs import logo
+
 CONF_PY = """
 project = "Test Manual"
 author = "Spiri"
@@ -53,7 +55,7 @@ def project(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def build(project: Path, builder: str) -> Sphinx:
+def build(project: Path, builder: str, strict: bool = True) -> Sphinx:
     out = project / "_build" / builder
     shutil.rmtree(out, ignore_errors=True)
     app = Sphinx(
@@ -62,7 +64,7 @@ def build(project: Path, builder: str) -> Sphinx:
         outdir=str(out),
         doctreedir=str(project / "_build" / "doctrees"),
         buildername=builder,
-        warningiserror=True,
+        warningiserror=strict,
         status=None,
     )
     app.build()
@@ -98,6 +100,28 @@ def test_pdf_is_named_for_the_document_not_the_project(project: Path) -> None:
     app = build(project, "latex")
     assert (project / "_build" / "latex" / "SPIRI-OM-001_rev1.0.tex").is_file()
     assert app.config.latex_documents[0][1] == "SPIRI-OM-001_rev1.0.tex"
+
+
+def test_an_unconvertible_logo_leaves_no_reference_behind(project: Path, monkeypatch) -> None:
+    # Regression, from a Read the Docs build that died in pdflatex with
+    # "File `spiri-logo.pdf' not found". Clearing `latex_logo` on a failed
+    # conversion is too late to help by itself: the builder's `init()` has
+    # already run, and `init_context()` copied the basename into
+    # `logofilename`, which is what the template interpolates. The cover has to
+    # come out logo-less, not referencing a PDF that was never written.
+    monkeypatch.setattr(logo, "CONVERTERS", ())
+    (project / "docs" / "_static").mkdir()
+    (project / "docs" / "_static" / "logo.svg").write_text(
+        '<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"/>'
+    )
+    (project / "docs" / "conf.py").write_text(CONF_PY + '\nspiri_docs_logo = "_static/logo.svg"\n')
+
+    # Not strict: losing the logo is a warning, and warnings are fatal here.
+    build(project, "latex", strict=False)
+    tex = (project / "_build" / "latex" / "SPIRI-OM-001_rev1.0.tex").read_text()
+    assert "spiri-logo.pdf" not in tex
+    # Sphinx always defines `\sphinxlogo`; with no logo it is the empty box.
+    assert r"\newcommand{\sphinxlogo}{\vbox{}}" in tex
 
 
 def test_a_project_may_still_name_its_own_pdf(project: Path) -> None:

@@ -11,6 +11,14 @@ build:
   os: ubuntu-24.04
   tools:
     python: "[[ python_version ]]"
+[%- if use_spiri_brand and build_pdf %]
+  # The cover logo is SVG, which pdflatex cannot read, so the build converts it
+  # -- see .devcontainer/setup.sh, which installs the same package. It goes here
+  # rather than in the `install` job because RTD does not grant sudo to build
+  # jobs; `apt_packages` is the supported route.
+  apt_packages:
+    - librsvg2-bin
+[%- endif %]
   jobs:
     install:
       - pip install uv
@@ -24,10 +32,8 @@ build:
       # type appears here without being listed there, so the `formats:` block
       # below has to be kept in step with this one.
       #
-      # VERIFY ON FIRST BUILD: this assumes latexmk and a TeX toolchain are
-      # present in the ubuntu-24.04 image. If the build fails looking for
-      # latexmk, add an apt install to the `install` job above, or drop back to
-      # `formats: [pdf]` with no custom build jobs and let RTD drive LaTeX.
+      # latexmk and the TeX toolchain are present in the ubuntu-24.04 image --
+      # confirmed on a real build, which got as far as running latexmk 4.83.
       pdf:
         - uv run sphinx-build -b latex docs docs/_build/latex
         - make -C docs/_build/latex all-pdf
