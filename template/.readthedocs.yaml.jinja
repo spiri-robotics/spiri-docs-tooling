@@ -38,12 +38,20 @@ build:
         - uv run sphinx-build -b latex docs docs/_build/latex
         - make -C docs/_build/latex all-pdf
         - mkdir -p $READTHEDOCS_OUTPUT/pdf
-        # Name the file rather than globbing `*.pdf`. The build directory holds
-        # more than one PDF[% if use_spiri_brand %] -- Sphinx copies the converted cover logo in
-        # beside the document[% endif %], and RTD rejects a pdf output directory containing
-        # more than one file. `spiri_docs name` is the same source of truth the
-        # release workflow uses, so the two cannot drift apart.
-        - cp "docs/_build/latex/$(uv run python -m spiri_docs name).pdf" $READTHEDOCS_OUTPUT/pdf/
+        # Exactly one file, named for the project slug. RTD enforces both, and
+        # is unhelpful about the second: a wrongly named PDF has failed with
+        # "Unknown problem ... report this to us with your build id" rather than
+        # anything actionable. See readthedocs.org#10873, which notes the naming
+        # rule "is not documented anywhere".
+        #
+        # The source name is still `spiri_docs name`[% if use_spiri_brand %], which also picks the
+        # document out from beside the cover logo Sphinx copies into the build
+        # directory[% endif %].
+        #
+        # Renaming on the way out costs nothing: this PDF is the uncontrolled
+        # reading copy, and RTD renames it for hosting regardless. The
+        # controlled PDF keeps the document number -- see release.yml.
+        - cp "docs/_build/latex/$(uv run python -m spiri_docs name).pdf" "$READTHEDOCS_OUTPUT/pdf/$READTHEDOCS_PROJECT.pdf"
 [%- endif %]
 [%- if build_pdf %]
 
