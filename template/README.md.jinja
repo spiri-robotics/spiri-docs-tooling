@@ -1,0 +1,64 @@
+# [[ document_title ]]
+
+[[ document_description ]]
+
+Document number **[[ document_number ]]**.
+[% if audience == 'regulator' %]
+A **regulator-facing controlled document**. Every issued revision names an
+approver and an effective date.
+[%- elif audience == 'customer' %]
+A **customer-facing controlled document**. Readers outside the company rely on
+it, so revisions are issued deliberately.
+[%- endif %]
+
+## Read it
+
+- **Online:** <https://[[ project_slug ]].readthedocs.io>
+[%- if build_pdf %]
+- **PDF:** <https://github.com/[[ github_owner ]]/[[ project_slug ]]/releases/latest>
+
+  The PDF attached to a release is the controlled copy. Link customers[% if audience == 'regulator' %] and
+  regulators[% endif %] to it rather than to the Read the Docs PDF, which is rebuilt in place
+  and can change after they have it.
+[%- endif %]
+
+## Edit it
+
+**→ [CONTRIBUTING.md](CONTRIBUTING.md)** walks through it from nothing: which
+two programs to install, how to preview your changes as you type, and how to
+share them. No programming knowledge needed, and nothing to configure.
+
+The short version, once you are set up: open the folder in VS Code, click
+**Reopen in Container**, press `Ctrl+Shift+B`, and edit the `.md` files in
+[`docs/`](docs/).
+
+## What is where
+
+| Path | What it is |
+| --- | --- |
+| `docs/*.md` | The chapters — this is what you edit |
+| `docs/index.md` | Cover page and table of contents |
+| `docs/_static/` | Images |
+| `revisions.yaml` | The revision history (see below) |
+| `docs/conf.py` | Build settings; rarely needs touching |
+[% if use_vale %]| `.vale.ini` | Style guide settings |
+[% endif %]
+## Revisions
+
+`revisions.yaml` is the only place a revision number is written. It fills in the
+cover page, the revision table, the page footers[% if build_pdf %], and the PDF filename[% endif %] —
+so there is nowhere for it to drift out of step.
+
+A revision being written is marked `draft: true`, and says so on the cover and
+in the footer. Removing that line issues it[% if audience == 'regulator' %], which requires an approver and an
+effective date[% endif %]. **Check with the document owner before issuing a revision.**
+[% if build_pdf %]
+Tagging a revision builds the PDF and attaches it to a GitHub release:
+
+```sh
+git tag v1.1 && git push --tags
+```
+[% endif %]
+---
+
+Generated from [spiri-docs-tooling](https://github.com/[[ github_owner ]]/spiri-docs-tooling).

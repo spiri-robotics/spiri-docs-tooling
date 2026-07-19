@@ -1,0 +1,42 @@
+# The revision history for [[ document_title ]].
+#
+# This file is the single source for the cover page, the PDF footer, the PDF
+# filename, and the revision table in the document. Nothing else records the
+# revision -- do not put a version number anywhere else, it will drift.
+#
+# To issue a revision: add an entry at the bottom, commit, and tag it
+# `v<revision>`. CI builds the PDF and attaches it to a GitHub release, which is
+# the copy anyone outside the company should be pointed at.
+#
+# Dates are unquoted ISO dates (YYYY-MM-DD). Quoting one makes it a string, and
+# the build will reject it rather than guess at the format.
+
+document_number: [[ document_number ]]
+[% if audience == 'regulator' -%]
+# Regulator-facing: every revision must name an approver and an effective date.
+# The build fails if either is missing.
+regulator_facing: true
+[%- else -%]
+regulator_facing: false
+[%- endif %]
+[%- if distribution_statement %]
+distribution_statement: [[ distribution_statement ]]
+[%- endif %]
+
+revisions:
+  - revision: "0.1"
+    # Set this to the date of the initial draft.
+    date: 2026-01-01
+    summary: Initial draft.
+    author: [[ author_name ]]
+    # A draft is marked as one on the cover page, in the PDF footer, and in the
+    # PDF filename, so a printed copy cannot be mistaken for an issued document.
+    #
+    # Remove this line to issue the revision.[% if audience == 'regulator' %] Because this document is
+    # regulator-facing, the build will then require `approver` and
+    # `effective_date` below -- and will reject "TODO" as either.[% endif %]
+    draft: true
+[%- if audience == 'regulator' %]
+    # approver: A. Person
+    # effective_date: 2026-02-01
+[%- endif %]

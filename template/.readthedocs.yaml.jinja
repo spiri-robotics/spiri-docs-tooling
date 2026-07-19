@@ -1,0 +1,40 @@
+# Read the Docs builds the browsable copy of this manual.
+#
+# Note the split, which is deliberate: RTD rebuilds a version in place, so the
+# PDF at a given RTD URL can change after it is issued. That is fine for reading
+# and wrong for a controlled document. The controlled PDF is the one CI attaches
+# to a GitHub release -- see .github/workflows/release.yml.
+
+version: 2
+
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "[[ python_version ]]"
+  jobs:
+    install:
+      - pip install uv
+      - uv sync --group docs
+    build:
+      html:
+        - uv run sphinx-build -b html docs $READTHEDOCS_OUTPUT/html
+[%- if build_pdf %]
+      # Taking over `build.jobs.build` means RTD no longer infers the other
+      # formats from `formats:` -- each one has to be spelled out here.
+      #
+      # VERIFY ON FIRST BUILD: this assumes latexmk and a TeX toolchain are
+      # present in the ubuntu-24.04 image. If the build fails looking for
+      # latexmk, add an apt install to the `install` job above, or drop back to
+      # `formats: [pdf]` with no custom build jobs and let RTD drive LaTeX.
+      pdf:
+        - uv run sphinx-build -b latex docs docs/_build/latex
+        - make -C docs/_build/latex all-pdf
+        - mkdir -p $READTHEDOCS_OUTPUT/pdf
+        - cp docs/_build/latex/*.pdf $READTHEDOCS_OUTPUT/pdf/
+[%- endif %]
+
+sphinx:
+  configuration: docs/conf.py
+  # A manual with a broken cross-reference is a manual that sends someone to the
+  # wrong procedure. Fail rather than warn.
+  fail_on_warning: true

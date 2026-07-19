@@ -1,0 +1,50 @@
+# Issue a revision as a controlled artifact.
+#
+# Tagging `v<revision>` builds the PDF and attaches it to a GitHub release. That
+# asset is immutable once published, which is the property a controlled document
+# needs and which the Read the Docs PDF does not have -- RTD rebuilds a version
+# in place, so its PDF can change after someone has been pointed at it.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "[[ python_version ]]"
+
+      - run: uv sync --group docs
+
+      # texlive-latex-extra carries the packages Sphinx's LaTeX output expects
+      # (framed, titlesec, wrapfig, capt-of); latexmk drives the build. This is a
+      # large install, which is why it runs only on tags rather than every push.
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended tex-gyre
+
+      - name: Build PDF
+        run: |
+          uv run sphinx-build -b latex -W docs docs/_build/latex
+          make -C docs/_build/latex all-pdf
+
+      # spiri_docs names the file after the document number and revision, e.g.
+      # SPIRI-OM-001_rev1.2.pdf, so the asset identifies itself once downloaded.
+      - name: Attach PDF to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: docs/_build/latex/*.pdf
+          generate_release_notes: true

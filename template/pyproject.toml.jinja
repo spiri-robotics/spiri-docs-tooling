@@ -1,0 +1,28 @@
+# This project has no Python package -- it is prose. The only reason pyproject
+# exists is to pin the tools that build the document, so every contributor and CI
+# render it identically. With no [build-system] section, uv treats this as a
+# "virtual" project: it installs the dependencies and never tries to build this
+# directory as a package.
+[project]
+name = "[[ project_slug ]]"
+version = "0"  # The real version lives in revisions.yaml; this is never used.
+description = "[[ document_description ]]"
+requires-python = ">=[[ python_version ]]"
+dependencies = []
+
+[dependency-groups]
+docs = [
+    "sphinx>=8",
+    "sphinx-rtd-theme>=3",
+    "myst-parser>=4",
+    # Live preview: what the "Preview the manual" task in VS Code runs.
+    "sphinx-autobuild>=2024.10",
+    # Revision control, PDF document control, and build-time validation.
+    # https://github.com/[[ github_owner ]]/spiri-docs-tooling
+    "spiri-docs>=0.1",
+]
+
+# Until spiri-docs is published to PyPI, point uv at a local checkout:
+#
+# [tool.uv.sources]
+# spiri-docs = { path = "../spiri-docs-tooling/packages/spiri-docs", editable = true }

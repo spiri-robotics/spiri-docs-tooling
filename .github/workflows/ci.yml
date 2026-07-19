@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: uv sync --all-groups
+        working-directory: packages/spiri-docs
+      - run: uv run ruff check .
+        working-directory: packages/spiri-docs
+      - run: uv run pytest
+        working-directory: packages/spiri-docs
+
+  template:
+    # Generating a project and building its docs is the only test that covers
+    # the template and the extension together, which is the pair that actually
+    # ships. Both answer sets are exercised: the regulator path has validation
+    # rules the customer path does not.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        audience: [customer, regulator]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+
+      - name: Generate a project
+        run: |
+          uvx copier copy --trust --defaults \
+            --data audience=${{ matrix.audience }} \
+            . /tmp/generated
+
+      # VS Code ignores a malformed tasks.json or settings.json without saying
+      # anything, so a typo here would silently remove the buttons contributors
+      # rely on. Parse them (as JSONC -- they carry // comments) instead.
+      - name: Validate editor configuration
+        run: |
+          python3 - <<'EOF'
+          import json, re, pathlib, sys
+          bad = False
+          for f in sorted(pathlib.Path("/tmp/generated").glob(".vscode/*.json")) + \
+                   sorted(pathlib.Path("/tmp/generated").glob(".devcontainer/*.json")):
+              try:
+                  json.loads(re.sub(r"^\s*//.*$", "", f.read_text(), flags=re.M))
+              except Exception as exc:
+                  print(f"::error file={f}::{exc}"); bad = True
+          sys.exit(1 if bad else 0)
+          EOF
+
+      - name: Build its docs
+        working-directory: /tmp/generated
+        run: |
+          uv add --group docs --editable "$GITHUB_WORKSPACE/packages/spiri-docs"
+          uv sync --group docs
+          uv run sphinx-build -b html -W docs docs/_build/html

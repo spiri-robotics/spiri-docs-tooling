@@ -1,0 +1,44 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "[[ python_version ]]"
+
+      - run: uv sync --group docs
+
+      # Also validates revisions.yaml -- a regulator-facing revision with no
+      # approver or effective date fails here rather than reaching a reader.
+      - name: Build HTML
+        run: uv run sphinx-build -b html -W docs docs/_build/html
+
+      - name: Upload HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: html
+          path: docs/_build/html
+[% if use_vale %]
+  prose:
+    runs-on: ubuntu-latest
+    # Advisory for now: this reports style-guide findings without blocking a
+    # merge. Flip to `false` once the house style guide is settled and the team
+    # has had a chance to get used to it.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: errata-ai/vale-action@reviewdog
+        with:
+          files: docs
+          fail_on_error: false
+          reporter: github-pr-check
+[% endif %]

@@ -1,0 +1,120 @@
+# Copier template for a Spiri documentation project.
+#
+# A generated project is a Sphinx manual -- prose in Markdown, a revision history
+# in YAML, HTML on Read the Docs, and a PDF attached to a GitHub release as the
+# controlled artifact. It contains no application code and no container.
+#
+#   copier copy gh:spiri-robotics/spiri-docs-tooling ./my-manual
+#
+# For an app that happens to have docs, use spiri-app-template instead. The two
+# are deliberately separate: an app's docs describe code (autodoc, API reference),
+# a manual describes a product to someone holding it.
+#
+# See README.md for the full walk-through.
+
+# The template lives under template/ so this file, and the spiri-docs package
+# next to it, are not copied into generated projects.
+_subdirectory: template
+
+_answers_file: .copier-answers.yml
+
+_min_copier_version: "9.0.0"
+
+# Same bracket delimiters as spiri-app-template. GitHub Actions is full of
+# `${{ ... }}` and it would fight Jinja's default braces; with `[[ ]]` it passes
+# through as the literal text it is.
+_envops:
+  block_start_string: "[%"
+  block_end_string: "%]"
+  variable_start_string: "[["
+  variable_end_string: "]]"
+  comment_start_string: "[#"
+  comment_end_string: "#]"
+
+_message_after_copy: |
+  Created [[ document_title ]] in [[ _copier_conf.dst_path ]].
+
+  Next:
+    cd [[ _copier_conf.dst_path ]]
+    git init
+    uv sync                # installs sphinx and the spiri-docs extension
+    make docs              # build HTML into docs/_build/html
+    make serve             # ...or build and open it in a browser
+
+  Write prose in docs/*.md. Record every revision in revisions.yaml -- it drives
+  the cover page, the PDF footer, and the PDF filename.
+
+# ---------------------------------------------------------------------------
+
+document_title:
+  type: str
+  help: The title on the cover page, as a reader would say it.
+  default: Spiri Mu Operational Manual
+
+project_slug:
+  type: str
+  help: kebab-case slug -- names the repo and the Read the Docs project.
+  default: "[[ document_title | lower | replace(' ', '-') | replace('_', '-') ]]"
+
+document_number:
+  type: str
+  help: >-
+    The controlled document number. Printed on every page and used as the PDF
+    filename, so pick the form you want to live with (e.g. SPIRI-OM-001).
+  default: SPIRI-OM-001
+
+document_description:
+  type: str
+  help: One line, for the repo description and PDF metadata.
+  default: Operational manual for the Spiri Mu.
+
+audience:
+  type: str
+  help: >-
+    Who reads this. Regulator-facing documents must name an approver and an
+    effective date for every revision -- the build fails if they are missing.
+  choices:
+    "Customer-facing -- shipped to operators and customers": customer
+    "Regulator-facing -- submitted to a civil aviation authority": regulator
+    "Internal only": internal
+  default: customer
+
+distribution_statement:
+  type: str
+  help: >-
+    Printed on the cover. Leave blank for none. "Uncontrolled when printed" is
+    the usual choice for a document that lives online.
+  default: Uncontrolled when printed.
+
+author_name:
+  type: str
+  help: The organisation or person credited on the cover page.
+  default: Spiri Robotics
+
+github_owner:
+  type: str
+  help: GitHub user or org, for the repo and release links.
+  default: spiri-robotics
+
+build_pdf:
+  type: bool
+  help: >-
+    Build a PDF as well as HTML. The PDF is the controlled artifact -- CI attaches
+    it to a GitHub release on every tag, so an issued revision stays immutable.
+  default: true
+
+use_vale:
+  type: bool
+  help: >-
+    Check prose against the Spiri style guide with Vale. Starts advisory (CI
+    reports, never blocks) so contributors are not fought by a linter on day one.
+  default: true
+
+python_version:
+  type: str
+  help: Only used to build the docs; contributors never write Python here.
+  default: "3.13"
+  choices:
+    - "3.13"
+    - "3.12"
+    - "3.11"

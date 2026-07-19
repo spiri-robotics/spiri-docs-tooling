@@ -1,0 +1,30 @@
+# Command-line equivalents of the VS Code tasks in .vscode/tasks.json, for
+# people who prefer a terminal. Contributors are not expected to need this file.
+
+.PHONY: watch docs check pdf lint clean
+
+# Live preview: builds, serves, and refreshes as files change.
+watch:
+	uv run sphinx-autobuild docs docs/_build/html --host 0.0.0.0 --port 8000
+
+# Build the HTML manual once.
+docs:
+	uv run sphinx-build -b html docs docs/_build/html
+
+# Build the way CI does: warnings are errors.
+check:
+	uv run sphinx-build -b html -W docs docs/_build/html
+[% if build_pdf %]
+# Build the PDF. Needs a LaTeX toolchain; CI does this for you on a tag.
+pdf:
+	uv run sphinx-build -b latex docs docs/_build/latex
+	$(MAKE) -C docs/_build/latex all-pdf
+	@echo "PDF written to docs/_build/latex/"
+[% endif %][% if use_vale %]
+# Check prose against the Spiri style guide.
+lint:
+	vale sync
+	vale docs/
+[% endif %]
+clean:
+	rm -rf docs/_build

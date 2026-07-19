@@ -1,0 +1,13 @@
+# Contributors on Windows would otherwise commit CRLF line endings, which the
+# Linux container the document builds in does not expect -- shell scripts fail
+# outright and diffs become unreadable. Normalise everything to LF in the
+# repository; Git still checks files out natively on Windows.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.svg text

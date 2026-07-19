@@ -1,0 +1,50 @@
+{
+  "// what this is": "Editor defaults suited to writing prose rather than code. Committed so every contributor gets the same behaviour.",
+
+  // Wrap long lines visually instead of forcing hard line breaks, and save
+  // continuously so the live preview keeps up as you type.
+  "editor.wordWrap": "on",
+  "editor.wrappingIndent": "same",
+  "editor.rulers": [],
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 800,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // Prose, not code: no bracket-matching noise, no code completions popping up
+  // mid-sentence, but do check spelling.
+  "[markdown]": {
+    "editor.quickSuggestions": { "other": false, "comments": false, "strings": false },
+    "editor.suggest.showWords": false,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.tabSize": 2
+  },
+
+  // Build output is not something a contributor should see or search through.
+  "files.exclude": {
+    "**/__pycache__": true,
+    ".venv": true,
+    "docs/_build": true,
+    "styles/*": true,
+    "!styles/config": true
+  },
+  "search.exclude": {
+    "docs/_build": true,
+    "styles": true,
+    ".venv": true
+  },
+
+  // revisions.yaml drives the cover page, the PDF footer and the PDF filename.
+  // The schema gives autocomplete and flags a malformed entry while typing,
+  // rather than at build time.
+  "yaml.schemas": {
+    ".vscode/revisions.schema.json": ["revisions.yaml"]
+  },
+  "yaml.format.enable": true,
+[% if use_vale %]
+  "vale.valeCLI.config": "${workspaceFolder}/.vale.ini",
+  "vale.valeCLI.minAlertLevel": "suggestion",
+[% endif %]
+  "cSpell.words": ["Spiri", "airframe", "autopilot", "geofence", "telemetry", "waypoint"],
+  "cSpell.ignorePaths": ["docs/_build", "styles", ".venv", "uv.lock"]
+}

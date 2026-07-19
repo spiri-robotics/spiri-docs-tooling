@@ -1,0 +1,38 @@
+---
+orphan: false
+---
+
+# [[ document_title ]]
+
+:::{admonition} Document control
+:class: note
+
+| | |
+| --- | --- |
+| Document number | **{{ document_number }}** |
+| Revision | **{{ revision }}** |
+| Status | {{ document_status }} |
+| Effective date | {{ effective_date }} |
+[% if audience == 'regulator' %]| Approved by | {{ approver }} |
+[% endif %]| Issued by | [[ author_name ]] |
+[% if distribution_statement %]
+{{ distribution_statement }}
+[% endif %]:::
+
+[[ document_description ]]
+
+```{toctree}
+:maxdepth: 2
+:numbered:
+
+introduction
+operations
+maintenance
+```
+
+```{toctree}
+:maxdepth: 1
+:caption: Document control
+
+revisions
+```

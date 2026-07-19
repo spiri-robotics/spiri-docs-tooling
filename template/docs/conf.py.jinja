@@ -1,0 +1,59 @@
+"""Sphinx configuration for [[ document_title ]].
+
+Theme and structure live here, because they are decided once per document.
+Anything that has to be true on *every* build -- the revision number, the PDF
+footer, validation of revisions.yaml -- lives in the spiri_docs extension
+instead, where it cannot drift out of sync across manuals.
+"""
+
+from __future__ import annotations
+
+project = "[[ document_title ]]"
+author = "[[ author_name ]]"
+copyright = "%Y, [[ author_name ]]"  # noqa: A001 - the name Sphinx expects
+
+# `version` and `release` are deliberately not set here. spiri_docs sets both
+# from the current entry in revisions.yaml.
+
+extensions = [
+    "myst_parser",
+    "spiri_docs",
+]
+
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+# -- Prose ------------------------------------------------------------------
+
+# `substitution` is what makes {{ document_number }} and {{ revision }} work in
+# Markdown; the values come from revisions.yaml via spiri_docs.
+myst_enable_extensions = [
+    "colon_fence",
+    "deflist",
+    "substitution",
+]
+myst_heading_anchors = 3
+
+# -- HTML -------------------------------------------------------------------
+
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
+html_title = "[[ document_title ]]"
+
+html_theme_options = {
+    "collapse_navigation": False,
+    # A manual is read by section number as often as by name.
+    "navigation_depth": 4,
+}
+
+# -- PDF --------------------------------------------------------------------
+
+# spiri_docs sets latex_documents (so the file is named for the document number
+# and revision) and appends the document-control preamble. What is left here is
+# page setup, which is a per-document choice.
+latex_elements = {
+    "papersize": "letterpaper",
+    "pointsize": "11pt",
+    "figure_align": "htbp",
+}

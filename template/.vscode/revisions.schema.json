@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spiri controlled document revision history",
+  "description": "Drives the cover page, the revision table, the PDF footer, and the PDF filename.",
+  "type": "object",
+  "required": ["document_number", "revisions"],
+  "additionalProperties": false,
+  "properties": {
+    "document_number": {
+      "type": "string",
+      "description": "The controlled document number, e.g. SPIRI-OM-001. Printed on every page.",
+      "minLength": 1
+    },
+    "regulator_facing": {
+      "type": "boolean",
+      "description": "If true, every non-draft revision must name an approver and an effective date. The build fails otherwise.",
+      "default": false
+    },
+    "distribution_statement": {
+      "type": "string",
+      "description": "Printed on the cover page, e.g. 'Uncontrolled when printed.'"
+    },
+    "revisions": {
+      "type": "array",
+      "description": "Oldest first. The last entry is the current revision.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["revision", "date", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "type": "string",
+            "description": "The revision identifier, e.g. \"1.0\". Quote it, or YAML reads 1.0 as a number.",
+            "examples": ["1.0", "1.1", "2.0"]
+          },
+          "date": {
+            "$comment": "Deliberately untyped. YAML parses an unquoted 2026-01-01 into a date value, not a string, so 'type: string' here would mark a correct file as an error. The build validates dates properly and explains itself; the schema's job is autocomplete and hover help.",
+            "description": "The date this revision was written, as an unquoted YYYY-MM-DD."
+          },
+          "summary": {
+            "type": "string",
+            "description": "What changed in this revision, in one line. Appears in the revision table.",
+            "minLength": 1
+          },
+          "draft": {
+            "type": "boolean",
+            "description": "A revision still being written. Marked as a draft on the cover page, in the PDF footer, and in the PDF filename. Remove this to issue the revision.",
+            "default": false
+          },
+          "author": {
+            "type": "string",
+            "description": "Who wrote this revision."
+          },
+          "approver": {
+            "type": "string",
+            "description": "Who approved this revision for issue. Required for regulator-facing documents. Placeholder text such as TODO or TBD is rejected."
+          },
+          "effective_date": {
+            "$comment": "Untyped for the same reason as 'date' above.",
+            "description": "The date this revision takes effect, as an unquoted YYYY-MM-DD. Required for regulator-facing documents."
+          }
+        }
+      }
+    }
+  }
+}

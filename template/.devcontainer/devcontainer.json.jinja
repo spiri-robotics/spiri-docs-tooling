@@ -1,0 +1,37 @@
+{
+  "// what this is": "A ready-made writing environment. Opening this folder in VS Code with Docker running gives you Sphinx, a live preview[% if use_vale %], and the Vale style checker[% endif %] with nothing to install by hand. See CONTRIBUTING.md.",
+
+  "name": "[[ document_title ]]",
+  "image": "mcr.microsoft.com/devcontainers/python:[[ python_version ]]",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  // The live preview. VS Code forwards it automatically and offers to open it.
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Manual preview",
+      "onAutoForward": "openPreview"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "executablebookproject.myst-highlight",
+        "streetsidesoftware.code-spell-checker",
+        "redhat.vscode-yaml"[% if use_vale %],
+        "chrischinchilla.vale-vscode"[% endif %]
+      ],
+      "settings": {
+        // Python lives here only to build the document; nobody writing the
+        // manual should be shown Python tooling.
+        "python.defaultInterpreterPath": "/workspaces/[[ project_slug ]]/.venv/bin/python"
+      }
+    }
+  }
+}
