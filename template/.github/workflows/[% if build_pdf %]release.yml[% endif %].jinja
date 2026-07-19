@@ -18,9 +18,9 @@ jobs:
   pdf:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8
         with:
           python-version: "[[ python_version ]]"
 
@@ -44,7 +44,7 @@ jobs:
       # spiri_docs names the file after the document number and revision, e.g.
       # SPIRI-OM-001_rev1.2.pdf, so the asset identifies itself once downloaded.
       - name: Attach PDF to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: docs/_build/latex/*.pdf
           generate_release_notes: true

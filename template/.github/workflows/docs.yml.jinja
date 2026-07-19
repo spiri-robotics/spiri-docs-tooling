@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8
         with:
           python-version: "[[ python_version ]]"
 
@@ -23,7 +23,7 @@ jobs:
         run: uv run sphinx-build -b html -W docs docs/_build/html
 
       - name: Upload HTML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: html
           path: docs/_build/html
@@ -35,8 +35,8 @@ jobs:
     # has had a chance to get used to it.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: errata-ai/vale-action@reviewdog
+      - uses: actions/checkout@v7
+      - uses: errata-ai/vale-action@v2.1.2
         with:
           files: docs
           fail_on_error: false

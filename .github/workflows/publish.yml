@@ -8,8 +8,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v8
         with:
           python-version: "3.13"
 
@@ -17,7 +17,7 @@ jobs:
         run: uv build --package spiri-docs --out-dir dist
         working-directory: packages/spiri-docs
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: packages/spiri-docs/dist
@@ -32,7 +32,7 @@ jobs:
       # https://pypi.org/manage/project/spiri-docs/settings/publishing/
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
