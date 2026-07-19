@@ -37,9 +37,11 @@ _message_after_copy: |
   Next:
     cd [[ _copier_conf.dst_path ]]
     git init
-    uv sync                # installs sphinx and the spiri-docs extension
     make docs              # build HTML into docs/_build/html
-    make serve             # ...or build and open it in a browser
+    make watch             # ...or build it and keep it open in a browser
+
+  There is no install step: every command installs what it needs the first time
+  it runs. Opening the folder in VS Code with Docker running is easier still.
 
   Write prose in docs/*.md. Record every revision in revisions.yaml -- it drives
   the cover page, the PDF footer, and the PDF filename.

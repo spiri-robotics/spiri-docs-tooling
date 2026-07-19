@@ -31,20 +31,20 @@
       "label": "Check writing style",
       "detail": "Checks the manual against the Spiri style guide.",
       "type": "shell",
-      "command": "vale docs/",
+      // Deliberately the same `make lint` the terminal uses, for the reason
+      // "Build a PDF" calls `make pdf`: the first of its steps downloads the
+      // style rules, and a copy of that here would be the copy that gets
+      // forgotten. Running `vale docs/` directly is what produced
+      // "style 'Microsoft' does not exist on StylesPath" on a fresh clone.
+      "command": "make lint",
       "presentation": { "reveal": "always", "panel": "dedicated" },
-      "problemMatcher": {
-        "owner": "vale",
-        "fileLocation": ["relative", "${workspaceFolder}"],
-        "pattern": {
-          "regexp": "^\\s*(.+):(\\d+):(\\d+):\\s+(\\w+):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "severity": 4,
-          "message": 5
-        }
-      }
+      // No problem matcher on purpose. Vale's own output is grouped by file and
+      // is the more readable thing for a writer to be handed, and the Vale
+      // extension already puts every one of these in the Problems panel and
+      // under the prose itself. A matcher here would need `--output=line`,
+      // which would trade that readable report for a duplicate of what the
+      // editor already shows.
+      "problemMatcher": []
     },
 [% endif %]    {
       "label": "Check the manual for problems",

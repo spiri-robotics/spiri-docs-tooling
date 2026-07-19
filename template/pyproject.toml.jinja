@@ -29,6 +29,16 @@ docs = [
     "spiri-docs==0.1.3",
 ]
 
+# uv installs no dependency group by default, so without this line `uv run
+# sphinx-build` in a fresh clone reports "Failed to spawn: sphinx-build" -- the
+# tools are declared, and still not there. Naming the group as a default makes
+# every `uv run` install it first, so the preview, the checks and the PDF all
+# work on a clone with no setup step, and keep working after someone deletes
+# .venv. It is the only group there is; the grouping exists to say "these build
+# the document", not to make them optional.
+[tool.uv]
+default-groups = ["docs"]
+
 # Until spiri-docs is published to PyPI, point uv at a local checkout:
 #
 # [tool.uv.sources]

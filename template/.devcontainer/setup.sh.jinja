@@ -60,9 +60,11 @@ if [ -n "$VALE_ARCH" ]; then
   curl -sSfL "$url" | sudo tar -xz -C /usr/local/bin vale
   sudo chmod +x /usr/local/bin/vale
 
-  # Fetch the style rules named in .vale.ini. Without network this is not fatal:
-  # the document still builds, only the style checker is unavailable.
-  vale sync || echo "warning: could not fetch style rules; 'Check writing style' will not work" >&2
+  # Fetch the style rules named in .vale.ini, so the first style check does not
+  # pay for the download. Not fatal without a network: the document still
+  # builds, and `make lint` and the VS Code task run this same script, so they
+  # will fetch the rules themselves the first time they are used.
+  bash .devcontainer/sync-styles.sh || true
 fi
 [% endif %]
 cat <<'DONE'
