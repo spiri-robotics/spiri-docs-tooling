@@ -26,7 +26,7 @@ pdf:
 	bash .devcontainer/install-latex.sh
 	uv run sphinx-build -b latex docs docs/_build/latex
 	$(MAKE) -C docs/_build/latex all-pdf
-	@echo "PDF written to docs/_build/latex/"
+	@bash .devcontainer/show-pdf.sh
 [% endif %][% if use_vale %]
 # Check prose against the Spiri style guide.
 lint:

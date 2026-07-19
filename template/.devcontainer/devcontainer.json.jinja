@@ -25,7 +25,11 @@
         "executablebookproject.myst-highlight",
         "streetsidesoftware.code-spell-checker",
         "redhat.vscode-yaml"[% if use_vale %],
-        "chrischinchilla.vale-vscode"[% endif %]
+        "chrischinchilla.vale-vscode"[% endif %][% if build_pdf %],
+        // So the finished PDF opens in a tab when the build is done. Without
+        // it VS Code treats a .pdf as a binary file and offers to download it,
+        // which is a strange thing to be offered for a file you just made.
+        "tomoki1207.pdf"[% endif %]
       ],
       "settings": {
         // Python lives here only to build the document; nobody writing the

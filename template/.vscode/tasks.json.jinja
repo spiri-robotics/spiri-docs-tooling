@@ -64,9 +64,12 @@
     }[% if build_pdf %],
     {
       "label": "Build a PDF",
-      "detail": "Builds the PDF here. The first run installs LaTeX and takes a few minutes; CI builds this for you on release.",
+      "detail": "Builds the PDF and opens it. The first run installs LaTeX and takes a few minutes; CI builds this for you on release.",
       "type": "shell",
-      "command": "bash .devcontainer/install-latex.sh && uv run sphinx-build -b latex docs docs/_build/latex && make -C docs/_build/latex all-pdf",
+      // Deliberately the same `make pdf` the terminal uses, rather than the
+      // steps spelled out again here: the last of them opens the finished file,
+      // and two copies of that would drift.
+      "command": "make pdf",
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "problemMatcher": []
     }[% endif %]
