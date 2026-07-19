@@ -19,8 +19,10 @@ build:
       html:
         - uv run sphinx-build -b html docs $READTHEDOCS_OUTPUT/html
 [%- if build_pdf %]
-      # Taking over `build.jobs.build` means RTD no longer infers the other
-      # formats from `formats:` -- each one has to be spelled out here.
+      # Taking over `build.jobs.build` does not replace `formats:` -- it makes
+      # it required. RTD checks the two agree and rejects the config if a build
+      # type appears here without being listed there, so the `formats:` block
+      # below has to be kept in step with this one.
       #
       # VERIFY ON FIRST BUILD: this assumes latexmk and a TeX toolchain are
       # present in the ubuntu-24.04 image. If the build fails looking for
@@ -31,6 +33,13 @@ build:
         - make -C docs/_build/latex all-pdf
         - mkdir -p $READTHEDOCS_OUTPUT/pdf
         - cp docs/_build/latex/*.pdf $READTHEDOCS_OUTPUT/pdf/
+[%- endif %]
+[%- if build_pdf %]
+
+# Declares which formats this project publishes. Required because the build
+# jobs above name `pdf` explicitly; see the note there.
+formats:
+  - pdf
 [%- endif %]
 
 sphinx:
