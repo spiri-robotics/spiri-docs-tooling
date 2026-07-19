@@ -70,11 +70,19 @@ def preamble(history: RevisionHistory) -> str:
     # pages and `plain` for the first page of each chapter. A manual wants the
     # control block on both -- a page torn out of a binder should still identify
     # itself -- so redefine each.
+    #
+    # The three fancyhdr slots (L/C/R) each typeset at their natural width and
+    # do not push each other apart, so a long revision line silently overprints
+    # the page count. Two stacked full-width lines cannot collide: identifiers
+    # on the first, the revision and status -- the part that grows -- alone on
+    # the second.
+    status = rf"Revision {revision} \textperiodcentered\ {escape(effective)}"
     footer = (
         r"\fancyhf{}"
-        rf"\fancyfoot[L]{{\footnotesize {document_number}}}"
-        r"\fancyfoot[C]{\footnotesize Page \thepage\ of \pageref{LastPage}}"
-        rf"\fancyfoot[R]{{\footnotesize Revision {revision} \textperiodcentered\ {escape(effective)}}}"
+        r"\fancyfoot[C]{\footnotesize"
+        rf"\makebox[\textwidth][l]{{{document_number}\hfill "
+        r"Page \thepage\ of \pageref{LastPage}}\\"
+        rf"\footnotesize\makebox[\textwidth][c]{{{status}}}}}"
         r"\renewcommand{\headrulewidth}{0pt}"
         r"\renewcommand{\footrulewidth}{0.4pt}"
     )
@@ -82,6 +90,9 @@ def preamble(history: RevisionHistory) -> str:
     lines = [
         r"% --- spiri-docs document control ---",
         r"\usepackage{lastpage}",
+        # Room for the second footer line; without this fancyhdr warns and the
+        # body text runs into the footer.
+        r"\addtolength{\footskip}{\baselineskip}",
         r"\makeatletter",
         rf"\fancypagestyle{{normal}}{{{footer}}}",
         rf"\fancypagestyle{{plain}}{{{footer}}}",
