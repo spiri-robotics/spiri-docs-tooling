@@ -141,6 +141,15 @@ Torque to 4.5 N·m as specified by the airframe manufacturer.
 Everything else stays checked, so a genuine typo in that passage is still
 caught.
 
+You do not have to type either of these. Select the sentence, press
+`Ctrl+Shift+R` (`Cmd+Shift+R` on a Mac), and pick one of:
+
+- **Silence the style checker here** — wraps your selection in the off/on pair,
+  so the `vale on` cannot be forgotten.
+- **Silence one style rule here** — the same, for a single rule. It fills in a
+  placeholder rule name and selects it in both comments at once, so typing the
+  real one over it corrects both.
+
 These comments do not appear in the built manual — not on the website and not in
 the PDF. They work anywhere in a page, including inside a `:::{warning}` block
 and inside a list. There is no way to silence one line from within that line;

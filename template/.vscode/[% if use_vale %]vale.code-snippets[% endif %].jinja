@@ -1,0 +1,26 @@
+{
+  "// what this is": "Snippets for the comments that silence the style checker, so nobody has to remember the exact syntax. Because each body wraps ${TM_SELECTED_TEXT}, VS Code lists them under Refactor (Ctrl+Shift+R) when prose is selected -- select the sentence, pick the entry, done. The names below are what that menu shows, so they read as instructions rather than as syntax.",
+  "// note": "Quick suggestions are off for Markdown in settings.json, deliberately, so the prefixes below only surface on Ctrl+Space. The Refactor menu is the path worth teaching.",
+
+  "Silence the style checker here": {
+    "scope": "markdown",
+    "prefix": "valeoff",
+    "description": "Wrap this passage so the style checker skips it entirely.",
+    "body": [
+      "<!-- vale off -->",
+      "${TM_SELECTED_TEXT:$1}",
+      "<!-- vale on -->$0"
+    ]
+  },
+
+  "Silence one style rule here": {
+    "scope": "markdown",
+    "prefix": "valeruleoff",
+    "description": "Wrap this passage so the style checker skips one named rule, and keeps checking everything else. The rule name is the last thing on each line of the checker's output.",
+    "body": [
+      "<!-- vale ${1:Microsoft.Passive} = NO -->",
+      "${TM_SELECTED_TEXT:$2}",
+      "<!-- vale ${1:Microsoft.Passive} = YES -->$0"
+    ]
+  }
+}
