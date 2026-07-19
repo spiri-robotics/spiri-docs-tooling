@@ -20,6 +20,38 @@ jobs:
       - run: uv run pytest
         working-directory: packages/spiri-docs
 
+      # The version is written in three files that have to agree: the package
+      # metadata, `__version__` (which goes into the Sphinx extension metadata),
+      # and the template's exact pin. Nothing at build time catches a mismatch
+      # -- a stale pin just resolves to an older extension and the document
+      # builds without whatever conf.py was written against.
+      - name: Check the version is consistent
+        run: |
+          python3 - <<'EOF'
+          import pathlib, re, sys, tomllib
+
+          root = pathlib.Path(".")
+          package = tomllib.loads(
+              (root / "packages/spiri-docs/pyproject.toml").read_text()
+          )["project"]["version"]
+
+          found = {"packages/spiri-docs/pyproject.toml": package}
+          for path, pattern in (
+              ("packages/spiri-docs/src/spiri_docs/__init__.py",
+               r'__version__\s*=\s*"([^"]+)"'),
+              ("template/pyproject.toml.jinja",
+               r'"spiri-docs==([^"]+)"'),
+          ):
+              match = re.search(pattern, (root / path).read_text())
+              found[path] = match.group(1) if match else None
+
+          for path, version in found.items():
+              print(f"{version or '(not found)':>12}  {path}")
+          if len(set(found.values())) != 1 or None in found.values():
+              print(f"::error::version mismatch; all three must read {package}")
+              sys.exit(1)
+          EOF
+
   template:
     # Generating a project and building its docs is the only test that covers
     # the template and the extension together, which is the pair that actually

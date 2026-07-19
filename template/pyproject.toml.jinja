@@ -19,7 +19,14 @@ docs = [
     "sphinx-autobuild>=2024.10",
     # Revision control, PDF document control, and build-time validation.
     # https://github.com/[[ github_owner ]]/spiri-docs-tooling
-    "spiri-docs>=0.1",
+    #
+    # Pinned exactly, and to the template's own release: the two ship as a pair
+    # and conf.py is written against a specific version of the extension. A
+    # range lets uv resolve an older one that ignores a config value conf.py
+    # sets -- which costs you the cover logo and says nothing, because an
+    # unknown `spiri_docs_*` value is not an error. `copier update` moves this
+    # with the rest of the template. Widen it by hand if you need to.
+    "spiri-docs==0.1.1",
 ]
 
 # Until spiri-docs is published to PyPI, point uv at a local checkout:
