@@ -30,6 +30,10 @@ NOTE
 # one CI attaches to a release: texlive-latex-extra carries the packages Sphinx's
 # LaTeX output expects (framed, titlesec, wrapfig, capt-of), latexmk drives the
 # build, and tex-gyre supplies the fonts.
+# texlive-pictures supplies TikZ, which draws the ANSI Z535 safety alert
+# symbol on the hazard panels. Without it spiri-docs fails the build rather
+# than issue a manual whose DANGER panels carry no symbol -- an omission no
+# reader could notice.
 if ! sudo apt-get update -qq; then
   cat >&2 <<'HELP'
 
@@ -44,7 +48,7 @@ HELP
 fi
 
 sudo apt-get install -y --no-install-recommends \
-  latexmk texlive-latex-recommended texlive-latex-extra \
+  latexmk texlive-latex-recommended texlive-latex-extra texlive-pictures \
   texlive-fonts-recommended tex-gyre
 
 echo

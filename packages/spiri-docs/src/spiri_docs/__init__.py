@@ -26,15 +26,20 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from docutils import nodes
 from sphinx.application import Sphinx
 from sphinx.config import Config
 from sphinx.errors import ConfigError
 
-from . import latex, logo
-from .directives import RevisionHistoryDirective
+from . import latex, logo, safety
+from .directives import (
+    NoticeDirective,
+    RevisionHistoryDirective,
+    SafetyInstructionsDirective,
+)
 from .revisions import Revision, RevisionError, RevisionHistory, load, parse
 
-__version__ = "0.1.7"
+__version__ = "0.2.0"
 
 __all__ = [
     "Revision",
@@ -132,16 +137,57 @@ def _on_config_inited(app: Sphinx, config: Config) -> None:
         config.latex_logo = str(Path(app.doctreedir) / "spiri-logo.pdf")
 
     elements = dict(config.latex_elements or {})
+    # Ours goes last, after whatever the project set. Same ordering argument as
+    # the stylesheet: a project owns its own page setup right up until it would
+    # repaint a hazard panel.
     elements["preamble"] = "\n".join(
-        part for part in (elements.get("preamble", ""), latex.preamble(history)) if part
+        part
+        for part in (
+            elements.get("preamble", ""),
+            latex.preamble(history),
+            safety.latex_preamble(),
+        )
+        if part
     )
     config.latex_elements = elements
+
+
+#: Assets shipped with the extension, as opposed to with the template. Only the
+#: safety colours so far, and the distinction matters: a signal word panel has
+#: to keep meeting the standard on every build, which a per-project stylesheet
+#: cannot promise once someone edits it.
+_STATIC = Path(__file__).parent / "static"
 
 
 def _on_builder_inited(app: Sphinx) -> None:
     # Directives reach the history through the environment; set it fresh each
     # build so a pickled environment from an older run cannot go stale.
     app.env.spiri_docs_history = app.spiri_docs_history  # type: ignore[attr-defined]
+
+    # Safety colours, for HTML builders only -- `html_static_path` means nothing
+    # to the LaTeX builder, and appending to it there would have Sphinx warn
+    # about a static path it never reads.
+    #
+    # The priority is load order, and load order is the point: house style is a
+    # project's business right up until it would repaint a hazard panel, so this
+    # sheet has to come after the project's own `html_css_files`. Registering
+    # late is not enough -- Sphinx sorts by priority first, and `html_css_files`
+    # from conf.py sit at the 500 default, which put custom.css last. 800 is the
+    # documented band for a sheet that must load after everything else.
+    if app.builder.format == "html":
+        # The symbol has to reach the CSS as a data URI, and deriving it from
+        # the shipped SVG on every build is what keeps that file the one place
+        # the drawing lives. safety.py has the full reasoning.
+        generated = Path(app.doctreedir) / "spiri-static"
+        generated.mkdir(parents=True, exist_ok=True)
+        (generated / safety.FILENAME).write_text(
+            safety.stylesheet(_STATIC / "safety-alert.svg"), encoding="utf-8"
+        )
+
+        app.config.html_static_path.append(str(_STATIC))
+        app.config.html_static_path.append(str(generated))
+        app.add_css_file(safety.FILENAME, priority=800)
+        app.add_css_file("spiri-safety.css", priority=800)
 
     # Second half of the logo dance begun in _on_config_inited: do the actual
     # conversion, now that the builder is known and we can tell whether anyone
@@ -179,6 +225,19 @@ def setup(app: Sphinx) -> dict[str, Any]:
     app.connect("config-inited", _on_config_inited)
     app.connect("builder-inited", _on_builder_inited)
     app.add_directive("revision-history", RevisionHistoryDirective)
+    # The two Z535.6 panels docutils has no equivalent for. DANGER, WARNING and
+    # CAUTION are docutils' own and are restyled by spiri-safety.css rather than
+    # redefined, so a manual written before this extension existed keeps working.
+    app.add_directive("notice", NoticeDirective)
+    app.add_directive("safety-instructions", SafetyInstructionsDirective)
+
+    # LaTeX drops the class that the CSS keys off, so the two custom panels need
+    # routing to their own environments by hand. HTML needs no equivalent.
+    app.add_node(
+        nodes.admonition,
+        override=True,
+        latex=(safety.latex_visit_admonition, safety.latex_depart_admonition),
+    )
     return {
         "version": __version__,
         "parallel_read_safe": True,

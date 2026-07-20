@@ -87,25 +87,45 @@ stop typing for a moment. Leave it running while you work.
 
 ### Safety notices
 
-Use these for anything a reader could be hurt by. Type them exactly like this:
+The manual follows ANSI Z535.6, which gives five panels. Type them exactly like
+this:
 
 ````markdown
 :::{danger}
-Will cause death or serious injury if not avoided.
+Will result in death or serious injury if not avoided.
 :::
 
 :::{warning}
-Could cause death or serious injury if not avoided.
+Could result in death or serious injury if not avoided.
 :::
 
 :::{caution}
-May damage the aircraft or equipment.
+Could result in minor or moderate injury if not avoided.
+:::
+
+:::{notice}
+Damage to equipment, to the work, or to data. Nobody gets hurt.
+:::
+
+:::{safety-instructions}
+Safe working practices. Not a hazard in either direction.
 :::
 
 :::{note}
-Useful information, not a hazard.
+Useful information. Not a safety message at all.
 :::
 ````
+
+**The one to get right is CAUTION versus NOTICE.** If a person can be hurt it is
+CAUTION or higher. If only property is at risk it is NOTICE. Putting a
+property-damage message under CAUTION tells a reader they might be injured when
+they will not be, and the next real CAUTION they see counts for a little less.
+
+You do not type the signal word — the panel supplies it. And a safety message is
+not finished until it says three things: what the hazard is, what happens to the
+reader, and what to do instead. All three go inside the panel, together.
+
+The chapter on hazard conventions in the manual itself has worked examples.
 [% if use_vale %]
 ### Checking your writing
 

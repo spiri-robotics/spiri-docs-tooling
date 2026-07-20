@@ -140,6 +140,73 @@ def test_document_control_reaches_the_latex_preamble(project: Path) -> None:
     assert r"\pageref{LastPage}" in tex
 
 
+def test_safety_colours_ship_with_the_extension(project: Path) -> None:
+    build(project, "html")
+    static = project / "_build" / "html" / "_static"
+    assert (static / "spiri-safety.css").is_file()
+    # The palette is generated from safety.py rather than written in the
+    # stylesheet, because the LaTeX build needs the same five values.
+    assert "--spiri-ansi-red" in (static / "spiri-safety-icon.css").read_text()
+
+
+def test_safety_colours_load_after_the_project_stylesheet(project: Path) -> None:
+    # Regression: registering the stylesheet late is not enough. Sphinx orders
+    # by priority before insertion, and `html_css_files` from conf.py sit at the
+    # 500 default -- which put custom.css last and let a project's house style
+    # repaint a signal word panel, the one thing shipping these from the
+    # extension is meant to prevent.
+    (project / "docs" / "_static").mkdir()
+    (project / "docs" / "_static" / "custom.css").write_text("/* house style */\n")
+    (project / "docs" / "conf.py").write_text(
+        CONF_PY + '\nhtml_static_path = ["_static"]\nhtml_css_files = ["custom.css"]\n'
+    )
+    build(project, "html")
+    html = (project / "_build" / "html" / "index.html").read_text()
+    assert html.index("custom.css") < html.index("spiri-safety.css")
+
+
+def test_the_two_custom_signal_words_render(project: Path) -> None:
+    # Backtick fences rather than `:::`, which needs MyST's colon_fence and this
+    # fixture's conf.py deliberately enables nothing beyond the defaults.
+    (project / "docs" / "index.md").write_text(
+        INDEX_MD
+        + "\n```{notice}\nDamage to equipment.\n```\n"
+        + "\n```{safety-instructions}\nHow to work safely.\n```\n"
+    )
+    build(project, "html")
+    html = (project / "_build" / "html" / "index.html").read_text()
+    # docutils puts the custom class before `admonition`. The CSS is written as
+    # `.admonition.notice` and does not care about order, but pinning the actual
+    # output means a change in docutils shows up here rather than as a panel
+    # that quietly stops being styled.
+    assert 'class="notice admonition"' in html
+    assert 'class="safety-instructions admonition"' in html
+    # The signal word comes from the directive, not from the writer.
+    assert "Notice" in html
+    assert "Safety Instructions" in html
+
+
+def test_the_safety_alert_symbol_reaches_the_page(project: Path) -> None:
+    build(project, "html")
+    generated = project / "_build" / "html" / "_static" / "spiri-safety-icon.css"
+    assert generated.is_file()
+    assert "--spiri-icon-safety-alert" in generated.read_text()
+
+
+def test_custom_signal_words_survive_a_latex_build(project: Path) -> None:
+    # A bespoke docutils node would need a visitor per builder; a classed
+    # `admonition` node needs none. This is what that choice buys.
+    (project / "docs" / "index.md").write_text(INDEX_MD + "\n```{notice}\nDamage.\n```\n")
+    build(project, "latex")
+
+
+def test_safety_colours_are_not_offered_to_the_latex_builder(project: Path) -> None:
+    # `html_static_path` means nothing to the LaTeX builder, and appending to it
+    # there earns a warning about a static path nothing reads -- fatal, since
+    # this build is strict.
+    build(project, "latex")
+
+
 def test_an_unapprovable_revision_fails_the_build(project: Path) -> None:
     (project / "revisions.yaml").write_text(REVISIONS.replace("approver: B. Approver", ""))
     with pytest.raises(ConfigError, match="approver"):

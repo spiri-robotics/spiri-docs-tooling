@@ -11,13 +11,21 @@ build:
   os: ubuntu-24.04
   tools:
     python: "[[ python_version ]]"
-[%- if use_spiri_brand and build_pdf %]
-  # The cover logo is SVG, which pdflatex cannot read, so the build converts it
-  # -- see .devcontainer/setup.sh, which installs the same package. It goes here
-  # rather than in the `install` job because RTD does not grant sudo to build
-  # jobs; `apt_packages` is the supported route.
+[%- if build_pdf %]
+  # RTD does not grant sudo to build jobs, so anything the PDF needs beyond the
+  # image's own TeX toolchain has to come through `apt_packages`.
   apt_packages:
+[%- if use_spiri_brand %]
+    # The cover logo is SVG, which pdflatex cannot read, so the build converts
+    # it -- see .devcontainer/setup.sh, which installs the same package.
     - librsvg2-bin
+[%- endif %]
+    # TikZ, which draws the ANSI Z535 safety alert symbol on the hazard panels.
+    # Listed rather than assumed: `fail_on_warning` above covers Sphinx warnings
+    # only, so if this were missing the LaTeX warning would scroll past and RTD
+    # would publish a manual whose DANGER panels carry no symbol, with nothing
+    # failing. spiri-docs makes that a hard error for the same reason.
+    - texlive-pictures
 [%- endif %]
   jobs:
     # Fetch the art assets. Screenshots and photographs live in Git LFS (see

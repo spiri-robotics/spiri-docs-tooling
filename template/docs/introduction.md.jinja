@@ -14,24 +14,89 @@ Who is expected to read this and what they are assumed to already know.
 
 ## Hazard conventions
 
-Safety information appears throughout, in three levels:
+Safety information appears throughout, following ANSI Z535.6. The first three
+levels concern injury to people and carry the safety alert symbol. The last two
+do not: one concerns damage to property, the other is guidance on working
+safely, and neither means a person can be hurt.
+
+The examples below are all drawn from a kitchen. That is deliberate — they
+demonstrate the form without resembling anything that belongs in a real manual,
+so there is no way to leave one in by mistake.
+
+### What goes in a safety message
+
+A hazard message states three things, and is not finished until it states all
+three:
+
+1. **The hazard** — what the dangerous thing is.
+2. **The consequence** — what happens to the reader if they meet it.
+3. **How to avoid it** — what to do instead.
+
+The avoidance goes *inside* the panel, with the hazard it belongs to. Splitting
+it into a separate block further down means a reader who acts on the alert alone
+has been told they might be hurt and nothing else, and means the two halves
+drift apart the next time someone edits the procedure.
+
+### The five levels
+
+**DANGER** — hazard which, if not avoided, **will** result in death or serious
+injury. Reserved for the extreme case, where meeting the hazard is not a matter
+of chance.
 
 :::{danger}
-Immediate hazard which, if not avoided, **will** result in death or serious
-injury.
+The dough hook of a running mixer will crush and sever fingers. Switch the mixer
+off and wait for the hook to come to a complete stop before reaching into the
+bowl.
 :::
+
+**WARNING** — hazard which, if not avoided, **could** result in death or serious
+injury.
 
 :::{warning}
-Hazard which, if not avoided, **could** result in death or serious injury.
+Frying oil left unattended can ignite and spread fire across the kitchen,
+causing severe burns. Stay with the pan whenever the heat is on. If the oil
+catches, turn off the heat and smother the pan with a lid — never move it and
+never use water.
 :::
+
+**CAUTION** — hazard which, if not avoided, could result in **minor or moderate
+injury**.
 
 :::{caution}
-Hazard which, if not avoided, may result in damage to the aircraft or equipment.
+Trays coming out of a hot oven will burn exposed skin. Use dry oven gloves; a
+damp cloth conducts heat straight through to your hand.
 :::
 
-:::{note}
-Information that is useful but not safety-related.
+**NOTICE** — practices not related to personal injury. Damage to equipment, to
+the work, or to data.
+
+:::{notice}
+Opening the oven during the first twenty minutes will collapse the cake. Wait
+until the top has set before checking on it.
 :::
+
+**SAFETY INSTRUCTIONS** — safe work practices, grouped at the start of a section
+rather than attached to any one hazard. Not an alert in either direction.
+
+:::{safety-instructions}
+Tie back long hair and roll back loose sleeves before working near the mixer.
+Keep a lid within arm's reach whenever a pan is on the heat. Know where the fire
+blanket is before you need it.
+:::
+
+**NOTE** — useful information that is not safety-related. Not a signal word, and
+not a safety message.
+
+:::{note}
+Butter taken straight from the fridge creams more slowly than butter left to
+come up to room temperature.
+:::
+
+### Choosing between them
+
+The line between CAUTION and NOTICE is the one that matters: if a person can be
+hurt it is CAUTION or higher, and if only property is at risk it is NOTICE. A
+ruined cake is a NOTICE; the tray it came out on is a CAUTION.
 
 Use them sparingly. A manual where every paragraph is a warning is a manual
 where none of them are read.

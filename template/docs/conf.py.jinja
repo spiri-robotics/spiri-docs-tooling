@@ -56,9 +56,11 @@ html_theme_options = {
 [%- endif %]
 }
 
-# Colours -- including the light/dark hazard pairs -- live in _static/custom.css
-# rather than in `light_css_variables`/`dark_css_variables` here, so that the
-# house style stays in one file and stays legible as CSS.
+# House style lives in _static/custom.css rather than in
+# `light_css_variables`/`dark_css_variables` here, so that it stays in one file
+# and stays legible as CSS. The ANSI Z535 hazard colours are not there and are
+# not here: they ship from the spiri_docs extension, which loads its stylesheet
+# after this project's, so a signal word panel cannot be restyled by accident.
 
 # -- PDF --------------------------------------------------------------------
 

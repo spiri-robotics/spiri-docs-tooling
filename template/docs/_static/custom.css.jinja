@@ -4,24 +4,25 @@
  * this file is the seam where that decision lands. Keep it to variables and a
  * handful of rules so replacing it later is a small diff.
  *
- * Three things about Furo shape what follows. It draws admonition borders and
- * title bars from CSS custom properties, so the hazard levels below are
- * variable overrides rather than hand-written rules. It declares its light
- * palette on `body`, not `:root` -- since custom properties inherit, anything
- * we set on `:root` would lose to it. And it *redeclares* the brand colours
- * inside its dark blocks, which outrank a bare `body`; that is why the brand
- * mapping is repeated in all three palette blocks below rather than stated
- * once. The admonition colours need no such repetition -- Furo sets those only
- * at `body` -- so they live in the mapping section further down.
+ * Two things about Furo shape what follows. It declares its light palette on
+ * `body`, not `:root` -- since custom properties inherit, anything we set on
+ * `:root` would lose to it. And it *redeclares* the brand colours inside its
+ * dark blocks, which outrank a bare `body`; that is why the brand mapping is
+ * repeated in each palette block below rather than stated once.
  *
- * Brand colours and hazard colours are kept apart on purpose, and the
- * `use_spiri_brand` answer moves only the former. A hazard colour means "this
- * can hurt you" and answers to ISO 3864, not to a house style; a rebadged
- * manual with none of our branding still needs red to mean danger.
+ * -- Where the hazard colours went ------------------------------------------
  *
- * If this file ever grows real logic -- generated colours, per-builder
- * behaviour -- that is the signal to move it into the spiri-docs extension,
- * which ships as a dependency and can be updated without touching each repo.
+ * They used to live here, and deliberately do not any more. A signal word panel
+ * answers to ANSI Z535, not to a house style, and it has to keep answering to it
+ * for the life of the document -- which a file the project owns and can edit
+ * cannot promise. They now ship from the spiri-docs extension, in
+ * `spiri-safety.css`, loaded after this file so that nothing here can repaint a
+ * DANGER panel by accident.
+ *
+ * That is the same reasoning that puts the PDF footer in the extension: things
+ * that must hold on every build do not belong in a file whose whole purpose is
+ * to be edited. If you need a hazard colour changed, change it there and every
+ * manual picks it up on a dependency bump.
  */
 
 /* -- Palette ------------------------------------------------------------- */
@@ -42,95 +43,37 @@
  * literal brand colour and light mode gets the same hue made legible. */
 body {
   --spiri-accent: #006c82;
-[%- else %]
-/* Brand colours are switched off for this document, so Furo's own accent stays
- * in place and only the hazard levels below are overridden. */
-body {
-[%- endif %]
-  --spiri-hazard-danger: #b3261e;
-  --spiri-hazard-warning: #c25e00;
-  --spiri-hazard-caution: #8a6d00;
-[%- if use_spiri_brand %]
 
   --color-brand-primary: var(--spiri-accent);
   --color-brand-content: var(--spiri-accent);
-[%- endif %]
 }
 
-/* The dark values are re-tuned, not inverted. Dropped onto Furo's near-black
- * page the light reds and ambers sit at roughly 3:1 and read as muddy, which
- * is a poor property for a colour that means "this can hurt you". Each pair
- * holds its hue and lands near 7:1 against its own background.
- *
- * The two blocks are Furo's own dark selectors, matched exactly: an explicit
- * toggle, and a system-preference fallback for readers who have not toggled.
- * Both stay out of print, so a printed page always uses the light palette. */
+/* Furo's own dark selectors, matched exactly: an explicit toggle, and a
+ * system-preference fallback for readers who have not toggled. Both stay out of
+ * print, so a printed page always uses the light palette. */
 @media not print {
   body[data-theme="dark"] {
-[%- if use_spiri_brand %]
     --spiri-accent: #9edfec; /* brand blue, unmodified -- 12.48:1 here */
-[%- endif %]
-    --spiri-hazard-danger: #ff6b60;
-    --spiri-hazard-warning: #e58a2e;
-    --spiri-hazard-caution: #c4a300;
-[%- if use_spiri_brand %]
 
     --color-brand-primary: var(--spiri-accent);
     --color-brand-content: var(--spiri-accent);
-[%- endif %]
   }
 
   @media (prefers-color-scheme: dark) {
     body:not([data-theme="light"]) {
-[%- if use_spiri_brand %]
       --spiri-accent: #9edfec;
-[%- endif %]
-      --spiri-hazard-danger: #ff6b60;
-      --spiri-hazard-warning: #e58a2e;
-      --spiri-hazard-caution: #c4a300;
-[%- if use_spiri_brand %]
 
       --color-brand-primary: var(--spiri-accent);
       --color-brand-content: var(--spiri-accent);
-[%- endif %]
     }
   }
 }
-
-/* -- Mapping ------------------------------------------------------------- */
-
-/* Reads the palette above, so it needs no dark-mode twin. */
-
-body {
-  /* Hazard levels carry meaning, so they should be distinguishable at a glance
-   * and not only by the signal word. Furo ships caution and warning in the same
-   * orange, which loses exactly that distinction. Tuned per ISO 3864
-   * conventions; revisit once the house standard is settled.
-   *
-   * Brand orange (#dd5935) is close enough to the warning colour to be
-   * tempting. Resist it: a reader who learns that our orange means "Spiri" has
-   * been taught the wrong thing about the orange on a warning label. */
-  --color-admonition-title--danger: var(--spiri-hazard-danger);
-  --color-admonition-title-background--danger: color-mix(
-    in srgb,
-    var(--spiri-hazard-danger) 20%,
-    transparent
-  );
-
-  --color-admonition-title--warning: var(--spiri-hazard-warning);
-  --color-admonition-title-background--warning: color-mix(
-    in srgb,
-    var(--spiri-hazard-warning) 20%,
-    transparent
-  );
-
-  --color-admonition-title--caution: var(--spiri-hazard-caution);
-  --color-admonition-title-background--caution: color-mix(
-    in srgb,
-    var(--spiri-hazard-caution) 20%,
-    transparent
-  );
-}
+[%- else %]
+/* Brand colours are switched off for this document, so Furo's own accent stays
+ * in place and there is no palette to state. The hazard colours are not missing
+ * -- they ship from the extension, the same for a rebadged manual as for one
+ * carrying our branding, which is the point of their living there. */
+[%- endif %]
 
 [%- if use_spiri_brand %]
 /* -- Logo ---------------------------------------------------------------- */
@@ -151,11 +94,17 @@ body {
  * file rather than this one inverted. */
 .sidebar-logo {
   max-width: 120px;
+  /* Furo centres the image inside its container with `margin: 0 auto`. */
+  margin-left: 0;
 }
 
+/* Left-justified, but the clearspace still has to clear the sidebar edge. Furo
+ * pads .sidebar-brand by --sidebar-item-spacing-horizontal, so ask only for the
+ * remainder rather than hardcoding what that padding happens to be today. */
 .sidebar-logo-container {
   max-width: 120px;
-  margin: 27px auto;
+  margin: 27px auto 27px
+    max(0px, calc(27px - var(--sidebar-item-spacing-horizontal)));
 }
 
 [%- endif %]
