@@ -22,7 +22,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .latex import target_basename
+from .latex import software_version, target_basename
 from .revisions import RevisionError, load
 
 
@@ -31,12 +31,14 @@ def _fields(path: Path) -> dict[str, str]:
     current = history.current
     return {
         # The stem every published file is built from.
-        "name": target_basename(history),
+        "name": target_basename(history, software_version()),
         "document_number": history.document_number,
         "revision": current.revision,
         # Lower-case so a workflow can test it with `== 'true'`, which is how
         # GitHub Actions compares the strings it turns every output into.
         "draft": "true" if current.draft else "false",
+        "regulator_facing": "true" if history.regulator_facing else "false",
+        "software_version": software_version() or "",
         "date": current.date.isoformat(),
         "effective_date": (
             current.effective_date.isoformat() if current.effective_date else current.date.isoformat()

@@ -16,6 +16,10 @@ extension reads it on every build and, from that one file:
 * stamps the document number, revision and page-of-total into the PDF footer;
 * names the PDF after the document and revision.
 
+A build documenting a software release sets ``SPIRI_DOCS_SOFTWARE_VERSION``, and
+that version joins the footer and the filename too, and is available to the cover
+page as ``{{ software_version }}``.
+
 The deliberate split with ``spiri-doc-template``: the template owns what is
 decided once per project (theme, CSS, structure), this owns what has to be true
 on every build. A template cannot enforce anything after generation.
@@ -39,7 +43,7 @@ from .directives import (
 )
 from .revisions import Revision, RevisionError, RevisionHistory, load, parse
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "Revision",
@@ -76,6 +80,8 @@ def _substitutions(history: RevisionHistory) -> dict[str, str]:
         "approver": current.approver or EMPTY,
         # Not a person or a date: absent means "print nothing", not "print a dash".
         "distribution_statement": history.distribution_statement or "",
+        # A local build, with no version set, isn't any release.
+        "software_version": latex.software_version() or "dev",
     }
     return values
 
@@ -117,7 +123,7 @@ def _on_config_inited(app: Sphinx, config: Config) -> None:
     # rewrite just the target filename -- leaving title, author and theme as
     # whatever Sphinx worked out.
     if "latex_documents" not in getattr(config, "_raw_config", {}):
-        target = f"{latex.target_basename(history)}.tex"
+        target = f"{latex.target_basename(history, latex.software_version())}.tex"
         config.latex_documents = [
             (entry[0], target, *entry[2:]) for entry in config.latex_documents
         ]
@@ -144,7 +150,7 @@ def _on_config_inited(app: Sphinx, config: Config) -> None:
         part
         for part in (
             elements.get("preamble", ""),
-            latex.preamble(history),
+            latex.preamble(history, latex.software_version()),
             safety.latex_preamble(),
         )
         if part

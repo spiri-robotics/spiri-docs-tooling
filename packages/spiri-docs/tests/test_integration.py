@@ -140,6 +140,22 @@ def test_document_control_reaches_the_latex_preamble(project: Path) -> None:
     assert r"\pageref{LastPage}" in tex
 
 
+def test_software_version_reaches_the_pdf_name_and_footer(
+    project: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("SPIRI_DOCS_SOFTWARE_VERSION", "v0.8.0_rc")
+    build(project, "latex")
+    tex = (project / "_build" / "latex" / "SPIRI-OM-001_rev1.0_v0.8.0_rc.tex").read_text()
+    assert r"Software v0.8.0\_rc" in tex
+    assert r"for software v0.8.0\_rc" in tex
+
+
+def test_no_software_version_leaves_the_footer_alone(project: Path) -> None:
+    build(project, "latex")
+    tex = (project / "_build" / "latex" / "SPIRI-OM-001_rev1.0.tex").read_text()
+    assert "Software" not in tex.split("--- spiri-docs document control ---")[1]
+
+
 def test_safety_colours_ship_with_the_extension(project: Path) -> None:
     build(project, "html")
     static = project / "_build" / "html" / "_static"

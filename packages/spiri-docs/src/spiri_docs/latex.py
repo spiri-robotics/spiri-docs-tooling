@@ -9,6 +9,7 @@ drift, and the symptom of drift is a shipped PDF with a wrong footer.
 
 from __future__ import annotations
 
+import os
 import re
 
 from .revisions import RevisionHistory
@@ -29,6 +30,19 @@ _LATEX_SPECIAL = {
 }
 
 
+def software_version() -> str | None:
+    """The software version this build documents, from ``SPIRI_DOCS_SOFTWARE_VERSION``.
+
+    The revision says which edition of the document this is; this says which
+    release of the software it describes. They move separately, so both have to
+    show. Set by the build rather than worked out from git, because a manual for
+    hardware has no software version, and must keep its name and footer as they
+    are. Read from the environment so that Sphinx and ``python -m spiri_docs``,
+    which CI uses to find the PDF, can't disagree.
+    """
+    return os.environ.get("SPIRI_DOCS_SOFTWARE_VERSION", "").strip() or None
+
+
 def escape(text: str) -> str:
     """Escape *text* for use in LaTeX body copy."""
     return "".join(_LATEX_SPECIAL.get(char, char) for char in text)
@@ -40,18 +54,22 @@ def safe_filename(text: str) -> str:
     return cleaned or "manual"
 
 
-def target_basename(history: RevisionHistory) -> str:
-    """The PDF filename stem: document number and revision, no spaces.
+def target_basename(history: RevisionHistory, software: str | None = None) -> str:
+    """The PDF filename stem: document number, revision and any software version.
 
     A controlled document should be identifiable from its filename alone, after
     someone has emailed it around and lost the page it came from -- which is
-    also why a draft says so in the filename.
+    also why a draft says so in the filename. The software version is there
+    because two releases can share a revision: without it, their PDFs have the
+    same name and, where an API reference is generated from the code, different
+    contents.
     """
     suffix = "-DRAFT" if history.current.draft else ""
-    return safe_filename(f"{history.document_number}_rev{history.current.revision}{suffix}")
+    stem = f"{history.document_number}_rev{history.current.revision}{suffix}"
+    return safe_filename(f"{stem}_{software}" if software else stem)
 
 
-def preamble(history: RevisionHistory) -> str:
+def preamble(history: RevisionHistory, software: str | None = None) -> str:
     """LaTeX preamble fragment putting document control into every page footer."""
     current = history.current
     document_number = escape(history.document_number)
@@ -77,6 +95,8 @@ def preamble(history: RevisionHistory) -> str:
     # on the first, the revision and status -- the part that grows -- alone on
     # the second.
     status = rf"Revision {revision} \textperiodcentered\ {escape(effective)}"
+    if software:
+        status += rf" \textperiodcentered\ Software {escape(software)}"
     footer = (
         r"\fancyhf{}"
         r"\fancyfoot[C]{\footnotesize"
@@ -109,6 +129,8 @@ def preamble(history: RevisionHistory) -> str:
     # hyperref is loaded by sphinx.sty after this preamble is inserted, so defer
     # the metadata until the document actually begins.
     subject = f"{history.document_number} Revision {current.revision}"
+    if software:
+        subject += f" for software {software}"
     lines += [
         r"\AtBeginDocument{%",
         rf"  \hypersetup{{pdfsubject={{{escape(subject)}}},"

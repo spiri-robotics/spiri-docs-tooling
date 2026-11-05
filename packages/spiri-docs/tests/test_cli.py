@@ -65,6 +65,8 @@ def test_fields_are_shell_assignments(revisions, capsys):
         "document_number": "SPIRI-OM-001",
         "revision": "1.2",
         "draft": "false",
+        "regulator_facing": "false",
+        "software_version": "",
         "date": "2026-03-02",
         "effective_date": "2026-03-09",
     }
@@ -86,3 +88,21 @@ def test_a_bad_file_fails_without_a_traceback(capsys, tmp_path):
     code = main(["name", "--revisions", str(tmp_path / "nope.yaml")])
     assert code == 1
     assert "nope.yaml" in capsys.readouterr().err
+
+
+def test_the_software_version_joins_the_name(revisions, capsys, monkeypatch):
+    monkeypatch.setenv("SPIRI_DOCS_SOFTWARE_VERSION", "v0.8.0")
+    _, out = run(capsys, "name", "--revisions", revisions(ISSUED))
+    assert out.strip() == "SPIRI-OM-001_rev1.2_v0.8.0"
+
+    _, out = run(capsys, "name", "--revisions", revisions(DRAFT))
+    assert out.strip() == "SPIRI-OM-001_rev1.3-DRAFT_v0.8.0"
+
+    _, out = run(capsys, "fields", "--revisions", revisions(ISSUED))
+    assert "software_version=v0.8.0" in out.splitlines()
+
+
+def test_a_manual_with_no_software_version_keeps_its_name(revisions, capsys, monkeypatch):
+    monkeypatch.setenv("SPIRI_DOCS_SOFTWARE_VERSION", "  ")
+    _, out = run(capsys, "name", "--revisions", revisions(ISSUED))
+    assert out.strip() == "SPIRI-OM-001_rev1.2"

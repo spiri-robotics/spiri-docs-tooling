@@ -332,12 +332,12 @@ def latex_preamble() -> str:
             continue
         fill, ink = _hex(signal.colour), _hex(signal.ink)
         lines += [
-            rf"\sphinxsetup{{%",
+            r"\sphinxsetup{%",
             rf"  div.{signal.name}_border-TeXcolor={{HTML}}{{{fill}}},",
             rf"  div.{signal.name}_background-TeXcolor={{HTML}}{{FFFFFF}},",
             rf"  div.{signal.name}_title-background-TeXcolor={{HTML}}{{{fill}}},",
             rf"  div.{signal.name}_title-foreground-TeXcolor={{HTML}}{{{ink}}},",
-            rf"}}",
+            r"}",
         ]
 
     lines.append("")
