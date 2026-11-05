@@ -34,6 +34,11 @@ On every build the extension:
 - stamps document number, revision and `Page N of M` into the **PDF footer**;
 - names the PDF `SPIRI-OM-001_rev1.0.pdf`.
 
+A document for software has a second number: the release it describes, which moves
+separately from the revision. Set `SPIRI_DOCS_SOFTWARE_VERSION` in the build, and that
+version joins the footer and the filename (`SPIRI-OM-001_rev1.0_v0.8.0.pdf`) and is
+available as `{{ software_version }}`. Without it, nothing changes.
+
 And provides one directive:
 
 ```markdown
